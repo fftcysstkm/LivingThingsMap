@@ -3,7 +3,10 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/tsato/AndroidStudioProjects/LivingThingsMap/app/src/main/res/layout/activity_current_location.xml" value="0.12685185185185185" />
+        <entry key="..\:/Users/tsato/AndroidStudioProjects/LivingThingsMap/app/src/main/res/layout/activity_main.xml" value="0.22552083333333334" />
         <entry key="..\:/Users/tsato/AndroidStudioProjects/LivingThingsMap/app/src/main/res/layout/activity_maps.xml" value="0.371875" />
+        <entry key="..\:/Users/tsato/AndroidStudioProjects/LivingThingsMap/app/src/main/res/layout/fragment_maps.xml" value="0.22552083333333334" />
         <entry key="..\:/Users/tsato/AndroidStudioProjects/MapAppTest/app/src/main/res/layout/activity_current_location.xml" value="0.2" />
         <entry key="..\:/Users/tsato/AndroidStudioProjects/MapAppTest/app/src/main/res/layout/activity_maps.xml" value="0.1" />
       </map>
