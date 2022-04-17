@@ -7,16 +7,15 @@
 
     <fragment
         android:id="@+id/creaturesListFragment"
-        android:name="com.demo.android.mapapp.CreaturesListFragment"
-        android:label="fragment_creatures_list"
-        tools:layout="@layout/fragment_creatures_list" >
+        android:name="com.demo.android.mapapp.view.fragment.CreaturesListFragment"
+        android:label="@string/app_name">
         <action
-            android:id="@+id/action_creaturesListFragment_to_mapsFragment"
-            app:destination="@id/mapsFragment" />
+            android:id="@+id/action_creaturesListFragment_to_mapFragment"
+            app:destination="@id/mapFragment" />
     </fragment>
     <fragment
-        android:id="@+id/mapsFragment"
-        android:name="com.demo.android.mapapp.view.fragment.MapsFragment"
-        android:label="fragment_maps"
+        android:id="@+id/mapFragment"
+        android:name="com.demo.android.mapapp.view.fragment.MapFragment"
+        android:label="@string/app_name"
         tools:layout="@layout/fragment_maps" />
 </navigation>
