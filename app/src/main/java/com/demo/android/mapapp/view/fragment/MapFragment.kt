@@ -25,6 +25,9 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.launch
 
+/**
+ * 地図を表示するフラグメント
+ */
 class MapFragment : Fragment(), GoogleMap.OnMyLocationButtonClickListener, OnMapReadyCallback,
     ActivityCompat.OnRequestPermissionsResultCallback {
 
@@ -32,8 +35,6 @@ class MapFragment : Fragment(), GoogleMap.OnMyLocationButtonClickListener, OnMap
     private var map: GoogleMap? = null
 
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
-
-//    private var lastKnownLocation: Location? = null
 
     // バインディングクラスをnullableとし、nullで初期化
     // フラグメントはonCreateView()までレイアウトをインフレートできないため
@@ -189,43 +190,6 @@ class MapFragment : Fragment(), GoogleMap.OnMyLocationButtonClickListener, OnMap
         } catch (e: Exception) {
             Log.d(TAG, "Unable to get location", e)
         }
-        //↓　移植したもの
-//        try {
-//            if (!permissionDenied) {
-//                val locationResult = fusedLocationProviderClient.lastLocation
-//                locationResult.addOnCompleteListener(requireActivity()) { task ->
-//                    if (task.isSuccessful) {
-//                        // Set the map's camera position to the current location of the device.
-//                        lastKnownLocation = task.result
-//                        if (lastKnownLocation != null) {
-//                            map?.moveCamera(
-//                                CameraUpdateFactory.newLatLngZoom(
-//                                    LatLng(
-//                                        lastKnownLocation!!.latitude,
-//                                        lastKnownLocation!!.longitude
-//                                    ), MapFragment.DEFAULT_ZOOM.toFloat()
-//                                )
-//                            )
-//                        }
-//                    } else {
-//                        Log.d(
-//                            MapFragment.TAG,
-//                            "Current location is null. Using defaults."
-//                        )
-//                        Log.e(MapFragment.TAG, "Exception: %s", task.exception)
-//                        // todo 位置情報が取得できなかった場合　↓後で参考
-//                        // https://zenn.dev/yass97/articles/e99dccecdd4b80
-//                        map?.moveCamera(
-//                            CameraUpdateFactory
-//                                .newLatLngZoom(defaultLocation, DEFAULT_ZOOM.toFloat())
-//                        )
-//                        map?.uiSettings?.isMyLocationButtonEnabled = false
-//                    }
-//                }
-//            }
-//        } catch (e: SecurityException) {
-//            Log.e("Exception: %s", e.message, e)
-//        }
     }
 
     private fun showMissingPermissionError() {

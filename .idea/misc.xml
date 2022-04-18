@@ -6,10 +6,11 @@
         <entry key="..\:/Users/tsato/AndroidStudioProjects/LivingThingsMap/app/src/main/res/drawable/ic_baseline_add_24.xml" value="0.2105" />
         <entry key="..\:/Users/tsato/AndroidStudioProjects/LivingThingsMap/app/src/main/res/layout/activity_current_location.xml" value="0.30520833333333336" />
         <entry key="..\:/Users/tsato/AndroidStudioProjects/LivingThingsMap/app/src/main/res/layout/activity_main.xml" value="0.1" />
+        <entry key="..\:/Users/tsato/AndroidStudioProjects/LivingThingsMap/app/src/main/res/layout/fragment_add_creature_list.xml" value="0.33" />
         <entry key="..\:/Users/tsato/AndroidStudioProjects/LivingThingsMap/app/src/main/res/layout/fragment_creatures_list.xml" value="0.18" />
         <entry key="..\:/Users/tsato/AndroidStudioProjects/LivingThingsMap/app/src/main/res/layout/fragment_map.xml" value="0.1921875" />
         <entry key="..\:/Users/tsato/AndroidStudioProjects/LivingThingsMap/app/src/main/res/layout/map_fragment.xml" value="0.30520833333333336" />
-        <entry key="..\:/Users/tsato/AndroidStudioProjects/LivingThingsMap/app/src/main/res/layout/row_creature.xml" value="0.18" />
+        <entry key="..\:/Users/tsato/AndroidStudioProjects/LivingThingsMap/app/src/main/res/layout/row_creature.xml" value="0.25" />
       </map>
     </option>
   </component>
