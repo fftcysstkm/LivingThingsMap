@@ -1,11 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/creature_name"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginStart="8sp"
-    android:gravity="center_vertical"
-    android:minHeight="50sp"
-    android:textSize="18sp"
-    tools:text="生き物の名前" />
+    android:layout_margin="4sp"
+    android:clickable="true"
+    android:focusable="true">
+
+    <TextView
+        android:id="@+id/creature_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8sp"
+        android:gravity="center_vertical"
+        android:minHeight="50sp"
+        android:textSize="18sp"
+        tools:text="生き物の名前" />
+</com.google.android.material.card.MaterialCardView>
+
