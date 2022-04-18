@@ -8,6 +8,7 @@ buildscript {
         material_version = "1.5.0"
         nav_version = "2.3.5"
         play_services_maps = "18.0.2"
+        lifecycle_version = "2.4.1"
     }
 
     dependencies {
