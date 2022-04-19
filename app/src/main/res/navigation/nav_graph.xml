@@ -12,10 +12,18 @@
         <action
             android:id="@+id/action_creaturesListFragment_to_mapFragment"
             app:destination="@id/mapFragment" />
+        <action
+            android:id="@+id/action_creaturesListFragment_to_addCreatureListFragment"
+            app:destination="@id/addCreatureListFragment" />
     </fragment>
     <fragment
         android:id="@+id/mapFragment"
         android:name="com.demo.android.mapapp.view.fragment.MapFragment"
         android:label="@string/app_name"
         tools:layout="@layout/fragment_maps" />
+    <fragment
+        android:id="@+id/addCreatureListFragment"
+        android:name="com.demo.android.mapapp.view.fragment.AddCreatureListFragment"
+        android:label="@string/app_name"
+        tools:layout="@layout/fragment_add_creature_list" />
 </navigation>

@@ -1,60 +1,82 @@
 package com.demo.android.mapapp.view.fragment
 
+import android.annotation.SuppressLint
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.demo.android.mapapp.R
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.NavHostFragment
+import com.demo.android.mapapp.data.Creature
+import com.demo.android.mapapp.databinding.FragmentAddCreatureListBinding
+import com.demo.android.mapapp.viewmodel.CreaturesViewModel
+import java.time.LocalDateTime
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
 
 /**
- * A simple [Fragment] subclass.
- * Use the [AddCreatureListFragment.newInstance] factory method to
- * create an instance of this fragment.
+ * 生き物をリストに追加するフラグメント
  */
 class AddCreatureListFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+
+    // 生き物の情報を管理するViewModel
+    private val viewModel: CreaturesViewModel by activityViewModels()
+
+    // バインディングクラス
+    private var _binding: FragmentAddCreatureListBinding? = null
+    private val binding get() = _binding!!
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
     }
 
+    /**
+     * フラグメント生成時、viewbindingを設定
+     */
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_add_creature_list, container, false)
+        _binding = FragmentAddCreatureListBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment AddCreatureListFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            AddCreatureListFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
+    /**
+     * View生成後、リスナーを設定
+     */
+    @SuppressLint("NewApi")
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        binding.addButton.setOnClickListener {
+
+            // 入力データから生き物クラス作成 todo バリデーション
+            val name = binding.creatureNameText.text.toString()
+            val type = binding.creatureTypeText.text.toString()
+
+            val now = LocalDateTime.now()
+            val nextId = viewModel.creatures.value?.size?.plus(1)!!
+
+            // 生き物を追加
+            viewModel.addTestInputCreature(
+                Creature(
+                    id = nextId,
+                    type = type,
+                    name = name,
+                    createdAt = now
+                )
+            )
+
+            // 生き物リストフラグメントに戻る
+            NavHostFragment.findNavController(this@AddCreatureListFragment).navigateUp();
+        }
     }
+
+    /**
+     * フラグメント終了時にバインディングクラス破棄
+     */
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
 }
