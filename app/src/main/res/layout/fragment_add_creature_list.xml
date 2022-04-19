@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".view.fragment.AddCreatureListFragment">
+
+
+    <ImageView
+        android:id="@+id/ic_close_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:src="@drawable/ic_baseline_close_24"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/ic_creature_type"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:src="@drawable/ic_baseline_category_24"
+        app:layout_constraintBottom_toBottomOf="@+id/creature_type"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/creature_type" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/creature_type"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="@dimen/text_input_layout_width"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="24dp"
+        android:hint="@string/hint_text_creature_type"
+        app:layout_constraintStart_toEndOf="@+id/ic_creature_type"
+        app:layout_constraintTop_toBottomOf="@+id/ic_close_btn">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/creature_type_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+
+    <ImageView
+        android:id="@+id/ic_creature_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:src="@drawable/ic_baseline_edit_note_24"
+        app:layout_constraintBottom_toBottomOf="@+id/creature_name"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/creature_name" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/creature_name"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="@dimen/text_input_layout_width"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="24dp"
+        android:hint="@string/hint_text_creature_name"
+        app:layout_constraintStart_toEndOf="@+id/ic_creature_name"
+        app:layout_constraintTop_toBottomOf="@+id/creature_type">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/creature_name_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <ImageView
+        android:id="@+id/ic_tag"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:src="@drawable/ic_tag"
+        app:layout_constraintBottom_toBottomOf="@+id/tag"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/tag" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tag"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="@dimen/text_input_layout_width"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="24dp"
+        android:hint="@string/hint_text_tag"
+        app:layout_constraintStart_toEndOf="@+id/ic_tag"
+        app:layout_constraintTop_toBottomOf="@+id/creature_name">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/tag_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <Button
+        android:id="@+id/add_button"
+        android:layout_width="0dp"
+        android:layout_height="64dp"
+        android:layout_marginTop="24dp"
+        android:text="@string/add_to_list_text"
+        app:layout_constraintEnd_toEndOf="@+id/tag"
+        app:layout_constraintStart_toStartOf="@+id/tag"
+        app:layout_constraintTop_toBottomOf="@+id/tag" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

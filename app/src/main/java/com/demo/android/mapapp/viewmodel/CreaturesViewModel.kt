@@ -27,7 +27,7 @@ class CreaturesViewModel : ViewModel() {
     }
 
     /**
-     * 生き物のリストのランダムな位置に新たなテストデータを挿入
+     * テストメソッド：生き物のリストのランダムな位置に新たなテストデータを挿入
      */
     @SuppressLint("NewApi")
     fun addTestCreature() {
@@ -40,6 +40,16 @@ class CreaturesViewModel : ViewModel() {
             position,
             Creature(id = nextId, type = "魚", "added new お魚$nextId in ViewModel", now)
         )
+        _creatures.value = increasedCreatures
+    }
+
+    /**
+     * テストメソッド：生き物のリストのランダムな位置に新たなテストデータを挿入
+     */
+    fun addTestInputCreature(creature: Creature) {
+        val increasedCreatures = _creatures.value!!.toMutableList()
+        val nextId = increasedCreatures.size + 1
+        increasedCreatures.add(creature)
         _creatures.value = increasedCreatures
     }
 }
