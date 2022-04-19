@@ -58,13 +58,6 @@ class CreaturesListFragment : Fragment() {
         recyclerView.setHasFixedSize(true)
         val layoutManager = LinearLayoutManager(context)
         recyclerView.layoutManager = LinearLayoutManager(context)
-        // 罫線不要
-//        recyclerView.addItemDecoration(
-//            DividerItemDecoration(
-//                context,
-//                layoutManager.orientation
-//            )
-//        )
 
         // 生き物リストにオブザーバ設定、リストタップで画面遷移するリスナーを設定
         val navHostFragment =
@@ -79,9 +72,12 @@ class CreaturesListFragment : Fragment() {
             adapter.submitList(list)
         }
 
-        // fabにリストを追加するリスナーを登録
+        // fabにタップで生物リスト追加画面に移動
         val fab = _binding?.addFab?.setOnClickListener {
-            viewModel.addTestCreature()
+            val action =
+                CreaturesListFragmentDirections.actionCreaturesListFragmentToAddCreatureListFragment()
+            navController.navigate(action)
+//            viewModel.addTestCreature()
         }
     }
 
