@@ -1,4 +1,4 @@
-package com.demo.android.mapapp.view.fragment
+package com.demo.android.mapapp.ui.fragment
 
 import android.Manifest
 import android.annotation.SuppressLint

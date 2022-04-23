@@ -1,4 +1,4 @@
-package com.demo.android.mapapp.view.fragment
+package com.demo.android.mapapp.ui.fragment
 
 import android.os.Build
 import android.os.Bundle
@@ -12,8 +12,9 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.demo.android.mapapp.R
+import com.demo.android.mapapp.application.LivingThingsMapApplication
 import com.demo.android.mapapp.databinding.FragmentCreaturesListBinding
-import com.demo.android.mapapp.view.adapter.CreatureAdapter
+import com.demo.android.mapapp.ui.adapter.CreatureAdapter
 import com.demo.android.mapapp.viewmodel.CreaturesViewModel
 
 
@@ -23,7 +24,11 @@ import com.demo.android.mapapp.viewmodel.CreaturesViewModel
 class CreaturesListFragment : Fragment() {
 
     // 生き物の情報を管理するViewModel
-    private val viewModel: CreaturesViewModel by activityViewModels()
+    private val viewModel: CreaturesViewModel by activityViewModels {
+        CreaturesViewModel.CreatureViewModelFactory(
+            (activity?.application as LivingThingsMapApplication).database.creatureDao()
+        )
+    }
 
     // バインディングクラス
     private var _binding: FragmentCreaturesListBinding? = null
@@ -68,7 +73,7 @@ class CreaturesListFragment : Fragment() {
             navController.navigate(action)
         })
         recyclerView.adapter = adapter
-        viewModel.creatures.observe(viewLifecycleOwner) { list ->
+        viewModel.creatures.observe(this.viewLifecycleOwner) { list ->
             adapter.submitList(list)
         }
 
