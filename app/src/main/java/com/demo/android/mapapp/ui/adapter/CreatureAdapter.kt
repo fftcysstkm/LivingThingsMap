@@ -1,4 +1,4 @@
-package com.demo.android.mapapp.view.adapter
+package com.demo.android.mapapp.ui.adapter
 
 import android.view.LayoutInflater
 import android.view.View
@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.demo.android.mapapp.R
-import com.demo.android.mapapp.data.Creature
+import com.demo.android.mapapp.model.data.Creature
 
 /**
  * 生き物のリスト表示用のAdapter
@@ -31,7 +31,7 @@ class CreatureAdapter(private val onClickListener: OnClickListener) :
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         // ListAdapterではgetItem()メソッドでリストのDataオブジェクトを取得可能
         val creature = getItem(position)
-        holder.creatureName.text = creature.name
+        holder.creatureName.text = creature.creatureName
         holder.itemView.setOnClickListener {
             onClickListener.onClick(creature)
         }
@@ -63,7 +63,7 @@ class CreatureAdapter(private val onClickListener: OnClickListener) :
 
             // IDが同じかどうか
             override fun areItemsTheSame(oldItem: Creature, newItem: Creature): Boolean {
-                return oldItem.id == newItem.id
+                return oldItem.creatureId == newItem.creatureId
             }
 
             // itemが同じオブジェクトかどうか

@@ -1,4 +1,4 @@
-package com.demo.android.mapapp.view.fragment
+package com.demo.android.mapapp.ui.fragment
 
 import android.annotation.SuppressLint
 import android.os.Bundle
@@ -8,10 +8,9 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.NavHostFragment
-import com.demo.android.mapapp.data.Creature
+import com.demo.android.mapapp.application.LivingThingsMapApplication
 import com.demo.android.mapapp.databinding.FragmentAddCreatureListBinding
 import com.demo.android.mapapp.viewmodel.CreaturesViewModel
-import java.time.LocalDateTime
 
 
 /**
@@ -20,7 +19,11 @@ import java.time.LocalDateTime
 class AddCreatureListFragment : Fragment() {
 
     // 生き物の情報を管理するViewModel
-    private val viewModel: CreaturesViewModel by activityViewModels()
+    private val viewModel: CreaturesViewModel by activityViewModels {
+        CreaturesViewModel.CreatureViewModelFactory(
+            (activity?.application as LivingThingsMapApplication).database.creatureDao()
+        )
+    }
 
     // バインディングクラス
     private var _binding: FragmentAddCreatureListBinding? = null
@@ -49,22 +52,7 @@ class AddCreatureListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         binding.addButton.setOnClickListener {
 
-            // 入力データから生き物クラス作成 todo バリデーション
-            val name = binding.creatureNameText.text.toString()
-            val type = binding.creatureTypeText.text.toString()
-
-            val now = LocalDateTime.now()
-            val nextId = viewModel.creatures.value?.size?.plus(1)!!
-
-            // 生き物を追加
-            viewModel.addTestInputCreature(
-                Creature(
-                    id = nextId,
-                    type = type,
-                    name = name,
-                    createdAt = now
-                )
-            )
+            // 入力データ画面で生き物追加
 
             // 生き物リストフラグメントに戻る
             NavHostFragment.findNavController(this@AddCreatureListFragment).navigateUp();

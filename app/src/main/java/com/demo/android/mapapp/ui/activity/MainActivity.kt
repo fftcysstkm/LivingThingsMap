@@ -1,4 +1,4 @@
-package com.demo.android.mapapp.view.activity
+package com.demo.android.mapapp.ui.activity
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
