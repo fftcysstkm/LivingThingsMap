@@ -27,5 +27,5 @@ interface CreatureDao {
      * 生き物リストに表示する生き物を登録
      */
     @Insert
-    suspend fun addCreatures(creature: Creature)
+    suspend fun addCreature(creature: Creature)
 }
