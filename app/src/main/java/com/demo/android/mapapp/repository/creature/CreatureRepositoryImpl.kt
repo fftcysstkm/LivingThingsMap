@@ -14,4 +14,11 @@ class CreatureRepositoryImpl @Inject constructor(private val dao: CreatureDao) :
     override fun getCreatures(): Flow<List<Creature>> {
         return dao.getCreatures()
     }
+
+    /**
+     * 生き物リストに表示する生き物一覧を追加
+     */
+    override suspend fun addCreature(creature: Creature) {
+        dao.addCreature(creature)
+    }
 }

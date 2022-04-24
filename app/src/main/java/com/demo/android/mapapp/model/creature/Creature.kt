@@ -10,7 +10,7 @@ import java.time.LocalDateTime
 @Entity(tableName = "T_CREATURE")
 data class Creature(
     @PrimaryKey(autoGenerate = true)
-    val creatureId: Long,
+    val creatureId: Long?,
     val typeId: Long,
     val creatureName: String,
     val createdAt: LocalDateTime?,

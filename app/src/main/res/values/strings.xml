@@ -12,4 +12,7 @@
     <string name="hint_text_creature_name">生き物の名前</string>
     <string name="hint_text_tag">タグ</string>
     <string name="add_to_list_text">追加</string>
+
+    <!-- エラーメッセージ -->
+    <string name="error_empty_input">生き物タイプと生き物の名前を入力してください。</string>
 </resources>

@@ -7,9 +7,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.fragment.findNavController
 import com.demo.android.mapapp.databinding.FragmentAddCreatureListBinding
-import com.demo.android.mapapp.viewmodel.CreaturesViewModel
+import com.demo.android.mapapp.viewmodel.AddCreatureViewModel
+import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 
 
@@ -19,8 +20,8 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class AddCreatureListFragment : Fragment() {
 
-    // 生き物の情報を管理するViewModel
-    private val viewModel: CreaturesViewModel by activityViewModels()
+    // 生き物追加用情報を管理するViewModel
+    private val viewModel: AddCreatureViewModel by activityViewModels()
 
     // バインディングクラス
     private var _binding: FragmentAddCreatureListBinding? = null
@@ -47,20 +48,30 @@ class AddCreatureListFragment : Fragment() {
     @SuppressLint("NewApi")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        viewModel.errorMessage.observe(viewLifecycleOwner) { msg ->
+            if (msg.isEmpty()) return@observe
+
+            Snackbar.make(requireView(), msg, Snackbar.LENGTH_SHORT).show()
+            viewModel.errorMessage.value = ""
+        }
         binding.addButton.setOnClickListener {
+            // 入力データで生き物をDB保存
+            save()
+        }
 
-            // 入力データ画面で生き物追加
-
-            // 生き物リストフラグメントに戻る
-            NavHostFragment.findNavController(this@AddCreatureListFragment).navigateUp();
+        // viewModelの保存完了フラグを監視、trueなら生き物リストフラグメントに戻る
+        viewModel.done.observe(viewLifecycleOwner) {
+            findNavController().popBackStack();
         }
     }
 
     /**
      * 入力した生き物情報を保存
      */
-    private fun save(){
-
+    private fun save() {
+        val creatureType = binding.creatureTypeText.text.toString()
+        val creatureName = binding.creatureNameText.text.toString()
+        viewModel.save(creatureType, creatureName)
     }
 
     /**

@@ -8,4 +8,9 @@ interface CreatureRepository {
      * 生き物リストに表示する生き物一覧を取得
      */
     fun getCreatures(): Flow<List<Creature>>
+
+    /**
+     * 生き物リストに表示する生き物一覧を追加
+     */
+    suspend fun addCreature(creature: Creature)
 }
