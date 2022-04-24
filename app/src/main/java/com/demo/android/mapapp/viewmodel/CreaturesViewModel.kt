@@ -2,21 +2,23 @@ package com.demo.android.mapapp.viewmodel
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.asLiveData
-import com.demo.android.mapapp.model.dao.CreatureDao
-import com.demo.android.mapapp.model.data.Creature
+import com.demo.android.mapapp.model.creature.Creature
+import com.demo.android.mapapp.repository.creature.CreatureRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
 /**
  * 生き物の情報を保持するViewModel
  */
-class CreaturesViewModel(private val creatureDao: CreatureDao) : ViewModel() {
+@HiltViewModel
+class CreaturesViewModel @Inject constructor(
+    private val repository: CreatureRepository
+) : ViewModel() {
 
     // 生き物のリスト
-//    private val _creatures = MutableLiveData<List<Creature>>()
-//    val creatures: LiveData<List<Creature>> get() = _creatures
     val creatures: LiveData<List<Creature>> =
-        creatureDao.getCreaturesList().asLiveData()
+        repository.getCreatures().asLiveData()
 
     /**
      * データソースクラスからテストのお魚リスト取得
@@ -56,14 +58,14 @@ class CreaturesViewModel(private val creatureDao: CreatureDao) : ViewModel() {
     /**
      * 引数あり(Dao)のViewModelをインスタンス化するのに必要なクラス（ボイラープレート）
      */
-    class CreatureViewModelFactory(private val creatureDao: CreatureDao) :
-        ViewModelProvider.Factory {
-        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            if (modelClass.isAssignableFrom(CreaturesViewModel::class.java)) {
-                @Suppress("UNCHECKED_CAST")
-                return CreaturesViewModel(creatureDao) as T
-            }
-            throw IllegalArgumentException("Unknown ViewModel class")
-        }
-    }
+//    class CreatureViewModelFactory(private val creatureDao: CreatureDao) :
+//        ViewModelProvider.Factory {
+//        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+//            if (modelClass.isAssignableFrom(CreaturesViewModel::class.java)) {
+//                @Suppress("UNCHECKED_CAST")
+//                return CreaturesViewModel(creatureDao) as T
+//            }
+//            throw IllegalArgumentException("Unknown ViewModel class")
+//        }
+//    }
 }

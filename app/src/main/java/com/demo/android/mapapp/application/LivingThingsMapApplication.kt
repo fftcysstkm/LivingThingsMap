@@ -1,11 +1,11 @@
 package com.demo.android.mapapp.application
 
 import android.app.Application
-import com.demo.android.mapapp.model.database.CreatureRoomDatabase
+import dagger.hilt.android.HiltAndroidApp
 
 /**
- * ViewModelにDatabaseオブジェクトを利用可能にする
+ * アプリケーションでHiltによるDIを可能にする
  */
+@HiltAndroidApp
 class LivingThingsMapApplication : Application() {
-    val database: CreatureRoomDatabase by lazy { CreatureRoomDatabase.getDatabase(this) }
 }

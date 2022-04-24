@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.demo.android.mapapp.R
-import com.demo.android.mapapp.model.data.Creature
+import com.demo.android.mapapp.model.creature.Creature
 
 /**
  * 生き物のリスト表示用のAdapter

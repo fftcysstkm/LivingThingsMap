@@ -8,22 +8,19 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.NavHostFragment
-import com.demo.android.mapapp.application.LivingThingsMapApplication
 import com.demo.android.mapapp.databinding.FragmentAddCreatureListBinding
 import com.demo.android.mapapp.viewmodel.CreaturesViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
 
 /**
  * 生き物をリストに追加するフラグメント
  */
+@AndroidEntryPoint
 class AddCreatureListFragment : Fragment() {
 
     // 生き物の情報を管理するViewModel
-    private val viewModel: CreaturesViewModel by activityViewModels {
-        CreaturesViewModel.CreatureViewModelFactory(
-            (activity?.application as LivingThingsMapApplication).database.creatureDao()
-        )
-    }
+    private val viewModel: CreaturesViewModel by activityViewModels()
 
     // バインディングクラス
     private var _binding: FragmentAddCreatureListBinding? = null
@@ -57,6 +54,13 @@ class AddCreatureListFragment : Fragment() {
             // 生き物リストフラグメントに戻る
             NavHostFragment.findNavController(this@AddCreatureListFragment).navigateUp();
         }
+    }
+
+    /**
+     * 入力した生き物情報を保存
+     */
+    private fun save(){
+
     }
 
     /**
