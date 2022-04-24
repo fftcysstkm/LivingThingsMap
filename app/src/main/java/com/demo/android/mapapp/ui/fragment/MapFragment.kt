@@ -23,11 +23,13 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
 /**
  * 地図を表示するフラグメント
  */
+@AndroidEntryPoint
 class MapFragment : Fragment(), GoogleMap.OnMyLocationButtonClickListener, OnMapReadyCallback,
     ActivityCompat.OnRequestPermissionsResultCallback {
 
@@ -181,8 +183,8 @@ class MapFragment : Fragment(), GoogleMap.OnMyLocationButtonClickListener, OnMap
                 map?.moveCamera(
                     CameraUpdateFactory.newLatLngZoom(
                         LatLng(
-                            lastLocation!!.latitude,
-                            lastLocation!!.longitude
+                            lastLocation.latitude,
+                            lastLocation.longitude
                         ), MapFragment.DEFAULT_ZOOM.toFloat()
                     )
                 )

@@ -9,26 +9,24 @@ import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.demo.android.mapapp.R
-import com.demo.android.mapapp.application.LivingThingsMapApplication
 import com.demo.android.mapapp.databinding.FragmentCreaturesListBinding
 import com.demo.android.mapapp.ui.adapter.CreatureAdapter
 import com.demo.android.mapapp.viewmodel.CreaturesViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
 
 /**
  * 生き物のリストを表示するフラグメント
  */
+@AndroidEntryPoint
 class CreaturesListFragment : Fragment() {
 
     // 生き物の情報を管理するViewModel
-    private val viewModel: CreaturesViewModel by activityViewModels {
-        CreaturesViewModel.CreatureViewModelFactory(
-            (activity?.application as LivingThingsMapApplication).database.creatureDao()
-        )
-    }
+    private val viewModel: CreaturesViewModel by activityViewModels()
 
     // バインディングクラス
     private var _binding: FragmentCreaturesListBinding? = null
@@ -78,11 +76,8 @@ class CreaturesListFragment : Fragment() {
         }
 
         // fabにタップで生物リスト追加画面に移動
-        val fab = _binding?.addFab?.setOnClickListener {
-            val action =
-                CreaturesListFragmentDirections.actionCreaturesListFragmentToAddCreatureListFragment()
-            navController.navigate(action)
-//            viewModel.addTestCreature()
+        binding.addFab.setOnClickListener {
+            findNavController().navigate(R.id.action_creaturesListFragment_to_addCreatureListFragment)
         }
     }
 

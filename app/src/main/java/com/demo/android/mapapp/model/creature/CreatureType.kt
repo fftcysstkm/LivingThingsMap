@@ -1,4 +1,4 @@
-package com.demo.android.mapapp.model.data
+package com.demo.android.mapapp.model.creature
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

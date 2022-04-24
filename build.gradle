@@ -11,11 +11,15 @@ buildscript {
         lifecycle_version = "2.4.1"
         room_version = "2.4.2"
         kapt_version = "1.6.21"
+        hilt_version = "2.41"
+        hilt_lifecycle_viewmodel_version = "1.0.0-alpha03"
+        hilt_compiler_version = "1.0.0"
     }
 
     dependencies {
         classpath "androidx.navigation:navigation-safe-args-gradle-plugin:$nav_version"
         classpath "com.google.android.libraries.mapsplatform.secrets-gradle-plugin:secrets-gradle-plugin:2.0.1"
+        classpath "com.google.dagger:hilt-android-gradle-plugin:$hilt_version"
     }
 }
 

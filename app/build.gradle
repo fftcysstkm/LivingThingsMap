@@ -4,6 +4,7 @@ plugins {
     id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
     id 'androidx.navigation.safeargs'
     id 'kotlin-kapt'
+    id 'dagger.hilt.android.plugin'
 }
 
 android {
@@ -50,10 +51,19 @@ dependencies {
     implementation 'androidx.navigation:navigation-fragment-ktx:2.4.2'
     implementation 'androidx.navigation:navigation-ui-ktx:2.4.2'
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
-    implementation "androidx.room:room-runtime:$room_version"
+
     implementation 'com.google.firebase:protolite-well-known-types:18.0.0'
+
+    implementation "androidx.room:room-runtime:$room_version"
     kapt "androidx.room:room-compiler:$room_version"
     implementation "androidx.room:room-ktx:$room_version"
+
+    implementation "com.google.dagger:hilt-android:$hilt_version"
+    kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
+
+    //implementation "androidx.hilt:hilt-lifecycle-viewmodel:$hilt_lifecycle_viewmodel_version"
+    kapt "androidx.hilt:hilt-compiler:$hilt_compiler_version"
+
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
