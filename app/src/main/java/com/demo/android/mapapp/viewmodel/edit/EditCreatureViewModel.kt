@@ -1,4 +1,4 @@
-package com.demo.android.mapapp.viewmodel
+package com.demo.android.mapapp.viewmodel.edit
 
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel

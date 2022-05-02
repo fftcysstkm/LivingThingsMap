@@ -15,7 +15,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.demo.android.mapapp.R
 import com.demo.android.mapapp.databinding.FragmentCreaturesListBinding
 import com.demo.android.mapapp.ui.adapter.CreatureAdapter
-import com.demo.android.mapapp.viewmodel.CreaturesViewModel
+import com.demo.android.mapapp.viewmodel.list.CreaturesListViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 
@@ -26,7 +26,7 @@ import dagger.hilt.android.AndroidEntryPoint
 class CreaturesListFragment : Fragment() {
 
     // 生き物の情報を管理するViewModel
-    private val viewModel: CreaturesViewModel by activityViewModels()
+    private val viewModel: CreaturesListViewModel by activityViewModels()
 
     // バインディングクラス
     private var _binding: FragmentCreaturesListBinding? = null
@@ -71,9 +71,9 @@ class CreaturesListFragment : Fragment() {
             navController.navigate(action)
         })
         recyclerView.adapter = adapter
-        viewModel.creatures.observe(this.viewLifecycleOwner) { list ->
-            adapter.submitList(list)
-        }
+//        viewModel.creatures.observe(this.viewLifecycleOwner) { list ->
+//            adapter.submitList(list)
+//        }
 
         // fabにタップで生物リスト追加画面に移動
         binding.addFab.setOnClickListener {
