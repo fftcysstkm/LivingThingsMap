@@ -67,6 +67,7 @@ dependencies {
 
     //implementation "androidx.hilt:hilt-lifecycle-viewmodel:$hilt_lifecycle_viewmodel_version"
     kapt "androidx.hilt:hilt-compiler:$hilt_compiler_version"
+    implementation "androidx.hilt:hilt-navigation-compose:$hilt_navigation_compose_version"
 
     // compose関係
     // Integration with activities

@@ -1,4 +1,4 @@
-package com.demo.android.mapapp.viewmodel
+package com.demo.android.mapapp.viewmodel.list
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
