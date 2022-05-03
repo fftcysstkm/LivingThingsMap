@@ -1,11 +1,11 @@
-package com.demo.android.mapapp.viewmodel
+package com.demo.android.mapapp.viewmodel.add
 
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.demo.android.mapapp.model.creature.Creature
 import com.demo.android.mapapp.repository.creature.CreatureRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -21,10 +21,10 @@ class AddCreatureViewModel @Inject constructor(
 ) : ViewModel() {
 
     // エラーメッセージ
-    val errorMessage = MutableLiveData<String>()
+    val errorMessage = MutableStateFlow("")
 
-    // 保存完了
-    val done = MutableLiveData<Boolean>()
+    // 保存完了したか
+    val done = MutableStateFlow(false)
 
     /**
      * 生き物の情報を保存
@@ -49,10 +49,17 @@ class AddCreatureViewModel @Inject constructor(
                         updatedAt = null
                     )
                 )
+                // 保存完了
                 done.value = true
             } catch (e: Exception) {
-                errorMessage.value = e.message
+                errorMessage.value = e.message ?: ""
             }
+        }
+    }
+
+    fun resetDoneValue() {
+        if (done.value) {
+            done.value = false
         }
     }
 }
