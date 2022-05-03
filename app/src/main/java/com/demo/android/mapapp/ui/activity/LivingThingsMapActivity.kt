@@ -18,7 +18,6 @@ import com.demo.android.mapapp.viewmodel.edit.EditCreatureViewModel
 import com.demo.android.mapapp.viewmodel.list.CreaturesListViewModel
 import com.demo.android.mapapp.viewmodel.map.MapViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -27,13 +26,6 @@ class LivingThingsMapActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val permissions = rememberMultiplePermissionsState(
-                listOf(
-                    android.Manifest.permission.ACCESS_FINE_LOCATION,
-                    android.Manifest.permission.ACCESS_COARSE_LOCATION,
-                )
-            )
-//            ActivityResultContracts.RequestPermission(permissions)
             MapApp()
         }
     }
