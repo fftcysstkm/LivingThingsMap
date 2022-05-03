@@ -33,7 +33,11 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+    composeOptions {
+        kotlinCompilerExtensionVersion '1.1.1'
+    }
     buildFeatures {
+        compose true
         viewBinding true
     }
 }
@@ -63,6 +67,30 @@ dependencies {
 
     //implementation "androidx.hilt:hilt-lifecycle-viewmodel:$hilt_lifecycle_viewmodel_version"
     kapt "androidx.hilt:hilt-compiler:$hilt_compiler_version"
+    implementation "androidx.hilt:hilt-navigation-compose:$hilt_navigation_compose_version"
+
+    // compose関係
+    // Integration with activities
+    implementation "androidx.activity:activity-compose:$androidx_activity_compose_version"
+    // Compose Material Design
+    implementation "androidx.compose.material:material:$compose_version"
+    // Animations
+    implementation "androidx.compose.animation:animation:$compose_version"
+    // Tooling support (Previews, etc.)
+    implementation "androidx.compose.ui:ui-tooling:$compose_version"
+    // Integration with ViewModels
+    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycle_version"
+    // navigation
+    implementation "androidx.navigation:navigation-compose:$compose_nav_version"
+    // map
+    implementation "com.google.maps.android:maps-compose:$compose_maps_version"
+    // UI Tests
+    androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_version"
+    // livedataをStateに変換するのに必要
+    implementation "androidx.compose.runtime:runtime-livedata:$compose_version"
+
+    // 権限許可関係ライブラリー
+    implementation "com.google.accompanist:accompanist-permissions:$accompanist_version"
 
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     testImplementation 'junit:junit:4.13.2'

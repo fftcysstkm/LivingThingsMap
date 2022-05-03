@@ -7,10 +7,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.fragment.findNavController
 import com.demo.android.mapapp.databinding.FragmentAddCreatureListBinding
-import com.demo.android.mapapp.viewmodel.AddCreatureViewModel
-import com.google.android.material.snackbar.Snackbar
+import com.demo.android.mapapp.viewmodel.add.AddCreatureViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 
@@ -48,21 +46,21 @@ class AddCreatureListFragment : Fragment() {
     @SuppressLint("NewApi")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel.errorMessage.observe(viewLifecycleOwner) { msg ->
-            if (msg.isEmpty()) return@observe
-
-            Snackbar.make(requireView(), msg, Snackbar.LENGTH_SHORT).show()
-            viewModel.errorMessage.value = ""
-        }
+//        viewModel.errorMessage.observe(viewLifecycleOwner) { msg ->
+//            if (msg.isEmpty()) return@observe
+//
+//            Snackbar.make(requireView(), msg, Snackbar.LENGTH_SHORT).show()
+//            viewModel.errorMessage.value = ""
+//        }
         binding.addButton.setOnClickListener {
             // 入力データで生き物をDB保存
             save()
         }
 
         // viewModelの保存完了フラグを監視、trueなら生き物リストフラグメントに戻る
-        viewModel.done.observe(viewLifecycleOwner) {
-            findNavController().popBackStack();
-        }
+//        viewModel.done.observe(viewLifecycleOwner) {
+//            findNavController().popBackStack();
+//        }
     }
 
     /**

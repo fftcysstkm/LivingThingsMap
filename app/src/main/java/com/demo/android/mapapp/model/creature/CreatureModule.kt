@@ -2,6 +2,7 @@ package com.demo.android.mapapp.model.creature
 
 import android.content.Context
 import androidx.room.Room
+import com.demo.android.mapapp.application.LivingThingsMapApplication
 import com.demo.android.mapapp.repository.creature.CreatureRepository
 import com.demo.android.mapapp.repository.creature.CreatureRepositoryImpl
 import dagger.Binds
@@ -45,6 +46,15 @@ object CreatureModule {
     @Provides
     fun provideCreatureDao(database: CreatureRoomDatabase): CreatureDao {
         return database.creatureDao()
+    }
+
+    /**
+     * Applicationインスタンスの作り方をHiltに伝達
+     */
+    @Singleton
+    @Provides
+    fun provideApplication(): LivingThingsMapApplication {
+        return LivingThingsMapApplication()
     }
 }
 
