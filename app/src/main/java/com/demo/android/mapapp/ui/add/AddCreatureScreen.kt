@@ -24,7 +24,7 @@ fun AddCreatureScreen(
     onClickTopBarBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    
+
     // scaffoldの状態
     val scaffoldState = rememberScaffoldState()
 

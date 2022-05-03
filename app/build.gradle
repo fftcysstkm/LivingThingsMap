@@ -86,6 +86,8 @@ dependencies {
     implementation "com.google.maps.android:maps-compose:$compose_maps_version"
     // UI Tests
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_version"
+    // livedataをStateに変換するのに必要
+    implementation "androidx.compose.runtime:runtime-livedata:$compose_version"
 
     // 権限許可関係ライブラリー
     implementation "com.google.accompanist:accompanist-permissions:$accompanist_version"
