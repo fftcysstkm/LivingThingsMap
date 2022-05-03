@@ -82,8 +82,13 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycle_version"
     // navigation
     implementation "androidx.navigation:navigation-compose:$compose_nav_version"
+    // map
+    implementation "com.google.maps.android:maps-compose:$compose_maps_version"
     // UI Tests
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_version"
+
+    // 権限許可関係ライブラリー
+    implementation "com.google.accompanist:accompanist-permissions:$accompanist_version"
 
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     testImplementation 'junit:junit:4.13.2'
