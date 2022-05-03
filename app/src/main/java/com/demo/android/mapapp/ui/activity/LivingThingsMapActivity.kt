@@ -3,7 +3,6 @@ package com.demo.android.mapapp.ui.activity
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
@@ -18,13 +17,25 @@ import com.demo.android.mapapp.viewmodel.add.AddCreatureViewModel
 import com.demo.android.mapapp.viewmodel.edit.EditCreatureViewModel
 import com.demo.android.mapapp.viewmodel.list.CreaturesListViewModel
 import com.demo.android.mapapp.viewmodel.map.MapViewModel
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class LivingThingsMapActivity : ComponentActivity() {
+    @OptIn(ExperimentalPermissionsApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent { MapApp() }
+        setContent {
+            val permissions = rememberMultiplePermissionsState(
+                listOf(
+                    android.Manifest.permission.ACCESS_FINE_LOCATION,
+                    android.Manifest.permission.ACCESS_COARSE_LOCATION,
+                )
+            )
+//            ActivityResultContracts.RequestPermission(permissions)
+            MapApp()
+        }
     }
 }
 
@@ -59,14 +70,12 @@ fun MapApp() {
             composable("map") { backStackEntry ->
                 val viewModel = hiltViewModel<MapViewModel>()
                 val creatureId = backStackEntry.arguments?.getString("creatureId")?.toInt() ?: 0
-                MapScreen(viewModel = viewModel, creatureId = creatureId)
+                MapScreen(
+                    viewModel = viewModel,
+                    onClickTopBarBack = { navController.popBackStack() },
+                    creatureId = creatureId
+                )
             }
         }
     }
-}
-
-// 残骸
-@Composable
-fun Greeting(name: String) {
-    Text(text = "Hello $name!")
 }
