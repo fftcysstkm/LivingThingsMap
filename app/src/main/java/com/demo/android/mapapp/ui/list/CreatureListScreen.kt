@@ -1,5 +1,6 @@
 package com.demo.android.mapapp.ui.list
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -38,7 +39,7 @@ fun CreatureListScreen(
         floatingActionButton = { AddFab(onClickFab = onClickFab) }
     ) {
         // 一覧表示
-        CreaturesList(list = creatures)
+        CreaturesList(list = creatures, onClickList)
     }
 }
 
@@ -46,20 +47,28 @@ fun CreatureListScreen(
  * 生き物リストを表すパーツ
  */
 @Composable
-fun CreaturesList(list: State<List<Creature>>) {
+fun CreaturesList(
+    list: State<List<Creature>>,
+    onClickList: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     LazyColumn {
         items(list.value) { creature ->
-            CreatureCard(creatureName = creature.creatureName)
+            CreatureCard(
+                creatureName = creature.creatureName,
+                modifier = modifier.clickable { onClickList() })
         }
     }
 }
-
 
 /**
  * 生き物リストの一行を表すパーツ
  */
 @Composable
-fun CreatureCard(creatureName: String, modifier: Modifier = Modifier) {
+fun CreatureCard(
+    creatureName: String,
+    modifier: Modifier = Modifier
+) {
     Card(
         modifier
             .padding(4.dp)
