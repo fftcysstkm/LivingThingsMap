@@ -30,6 +30,11 @@ import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.rememberCameraPositionState
 
+/**
+ * 地図画面
+ * accompanistの使い方参考：
+ * https://google.github.io/accompanist/permissions/
+ */
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun MapScreen(

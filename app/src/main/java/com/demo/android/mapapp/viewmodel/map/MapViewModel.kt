@@ -10,6 +10,7 @@ import javax.inject.Inject
  * マップのViewModel
  * https://www.youtube.com/watch?v=t2Vi7iKC9v4&t=239s
  * https://proandroiddev.com/android-tutorial-on-location-update-with-livedata-774f8fcc9f15
+ * https://johnoreilly.dev/posts/jetpack-compose-google-maps-part2/
  */
 
 @HiltViewModel
