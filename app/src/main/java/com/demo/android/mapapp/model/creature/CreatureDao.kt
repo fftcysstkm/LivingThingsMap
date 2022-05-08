@@ -17,9 +17,9 @@ interface CreatureDao {
      */
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
-        "SELECT creatureId, typeId, creatureName " +
-                "FROM T_CREATURE " +
-                "ORDER BY typeId, creatureId"
+        "SELECT creatureId, categoryId, creatureName " +
+                "FROM CREATURE " +
+                "ORDER BY categoryId, creatureId"
     )
     fun getCreatures(): Flow<List<Creature>>
 
@@ -28,4 +28,10 @@ interface CreatureDao {
      */
     @Insert
     suspend fun addCreature(creature: Creature)
+
+    /**
+     * 生き物追加画面に表示する生き物カテゴリーを取得
+     */
+//    @Query()
+//    fun getCategories(): Flow<List<Category>>
 }

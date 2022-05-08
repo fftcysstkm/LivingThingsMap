@@ -12,7 +12,6 @@ import javax.inject.Inject
  * https://proandroiddev.com/android-tutorial-on-location-update-with-livedata-774f8fcc9f15
  * https://johnoreilly.dev/posts/jetpack-compose-google-maps-part2/
  */
-
 @HiltViewModel
 class MapViewModel @Inject constructor(
     application: Application

@@ -25,10 +25,7 @@ import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
-import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.MapProperties
-import com.google.maps.android.compose.MapUiSettings
-import com.google.maps.android.compose.rememberCameraPositionState
+import com.google.maps.android.compose.*
 
 /**
  * 地図画面
@@ -44,7 +41,7 @@ fun MapScreen(
     modifier: Modifier = Modifier
 ) {
 
-    val location =
+    val currentLocation =
         viewModel.getLocationLiveData().observeAsState()
 
     // scaffoldの状態
@@ -63,7 +60,7 @@ fun MapScreen(
         // 位置情報が許可されたらマップ表示
         // 位置情報が許可されていなければ、理由説明/マップが使用できない旨表示→リクエストで権限リクエスト画面表示
         if (permissionState.status.isGranted) {
-            MapView(location.value)
+            MapView(currentLocation.value)
         } else {
             Column(modifier = modifier.fillMaxSize()) {
 
@@ -101,14 +98,18 @@ fun MapView(locationDetail: LocationDetail?, modifier: Modifier = Modifier) {
         // 現在地有効化
         val mapProperties by remember { mutableStateOf(MapProperties(isMyLocationEnabled = true)) }
         val uiSettings by remember { mutableStateOf(MapUiSettings(myLocationButtonEnabled = true)) }
+        val tappedLocation = rememberMarkerState(position = LatLng(0.0, 0.0))
         // マップ
         GoogleMap(
             modifier = modifier.fillMaxSize(),
             cameraPositionState = cameraPositionState,
             properties = mapProperties,
-            uiSettings = uiSettings
+            uiSettings = uiSettings,
+            onMapLongClick = {
+                tappedLocation.position = it
+            }
         ) {
-            // todo 発見した生き物のマーカー
+            Marker(state = tappedLocation, draggable = true)
         }
     }
 }
@@ -116,7 +117,6 @@ fun MapView(locationDetail: LocationDetail?, modifier: Modifier = Modifier) {
 /**
  * トップバー生成
  */
-
 @Composable
 fun CreateTopBar(onClickTopBarBack: () -> Unit) {
     TopAppBar(

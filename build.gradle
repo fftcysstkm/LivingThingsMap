@@ -21,7 +21,7 @@ buildscript {
         androidx_activity_compose_version = "1.4.0"
         compose_version = "1.1.1"
         compose_nav_version = "2.5.0-beta01"
-        compose_maps_version = "1.0.0"
+        compose_maps_version = "2.1.1"
 
         // 権限関係ライブラリ
         accompanist_version = "0.24.7-alpha"
