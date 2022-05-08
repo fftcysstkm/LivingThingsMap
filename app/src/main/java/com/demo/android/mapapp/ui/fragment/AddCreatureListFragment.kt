@@ -67,9 +67,9 @@ class AddCreatureListFragment : Fragment() {
      * 入力した生き物情報を保存
      */
     private fun save() {
-        val creatureType = binding.creatureTypeText.text.toString()
-        val creatureName = binding.creatureNameText.text.toString()
-        viewModel.save(creatureType, creatureName)
+//        val creatureType = binding.creatureTypeText.text.toString()
+//        val creatureName = binding.creatureNameText.text.toString()
+//        viewModel.save(creatureType, creatureName)
     }
 
     /**

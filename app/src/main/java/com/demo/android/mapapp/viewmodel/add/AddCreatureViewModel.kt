@@ -6,34 +6,58 @@ import com.demo.android.mapapp.model.creature.Creature
 import com.demo.android.mapapp.repository.creature.CreatureRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
+ * 生き物追加画面の状態を表すクラス
+ */
+data class AddCreatureScreenState(
+    val categories: List<String> = listOf(
+        "鳥",
+        "虫",
+        "魚",
+        "爬虫類",
+        "両生類",
+        "植物",
+        "菌類",
+        "軟体動物",
+        "哺乳類",
+        "その他"
+    ),
+    val selected: String = categories[0],
+    val selectedIndex: Int = 0,
+    val creatureName: String = "",
+    val memo: String = "",
+    val errorMessage: String = "",
+    val done: Boolean = false
+)
+
+/**
  * 生き物追加に関するViewModel
- * 文字列リソースを使用するため、AndroidViewModelを継承
- * https://stackoverflow.com/questions/51451819/how-to-get-context-in-android-mvvm-viewmodel
- * https://stackoverflow.com/questions/63144315/how-to-inject-app-context-in-viewmodel-with-hilt
  */
 @HiltViewModel
 class AddCreatureViewModel @Inject constructor(
     private val repository: CreatureRepository
 ) : ViewModel() {
 
-    // エラーメッセージ
-    val errorMessage = MutableStateFlow("")
+    private val _state = MutableStateFlow(AddCreatureScreenState())
+    val state = _state.asStateFlow()
 
-    // 保存完了したか
-    val done = MutableStateFlow(false)
+    private fun currentState() = _state.value
+    private fun updateState(newState: () -> AddCreatureScreenState) {
+        _state.value = newState()
+    }
 
     /**
      * 生き物の情報を保存
      */
-    fun save(creatureType: String, creatureName: String) {
+    fun save(creatureName: String, categoryId: Int, memo: String) {
 
-        // 生き物タイプと生き物名が空だったらエラーメッセージを表示
-        if (creatureType.trim().isEmpty() || creatureName.trim().isEmpty()) {
-            errorMessage.value = "Please input text."
+        // 生き物名が空だったらエラーメッセージを表示
+        if (creatureName.trim().isEmpty()) {
+            updateState { currentState().copy(errorMessage = "Please input text.") }
             return
         }
 
@@ -42,24 +66,42 @@ class AddCreatureViewModel @Inject constructor(
             try {
                 repository.addCreature(
                     Creature(
-                        creatureId = null,
-                        typeId = 1,
+                        creatureId = 0,
+                        categoryId = categoryId.toLong(),
                         creatureName = creatureName,
-                        createdAt = null,
-                        updatedAt = null
+                        scientificName = null,
+                        memo = memo
                     )
                 )
                 // 保存完了
-                done.value = true
+                updateState { currentState().copy(done = true) }
+
             } catch (e: Exception) {
-                errorMessage.value = e.message ?: ""
+                // 保存失敗
+                updateState { currentState().copy(errorMessage = e.message ?: "") }
             }
         }
     }
 
+    fun updateCreatureName(name: String) {
+        updateState { currentState().copy(creatureName = name) }
+    }
+
+    fun updateMemo(memo: String) {
+        updateState { currentState().copy(memo = memo) }
+    }
+
+    fun updateSelectedOption(index: Int, selected: String) {
+        updateState { currentState().copy(selectedIndex = index, selected = selected) }
+    }
+
+    fun resetErrorMessage() {
+        updateState { currentState().copy(errorMessage = "") }
+    }
+
     fun resetDoneValue() {
-        if (done.value) {
-            done.value = false
+        if (currentState().done) {
+            updateState { currentState().copy(done = false) }
         }
     }
 }
