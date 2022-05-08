@@ -1,18 +1,12 @@
 package com.demo.android.mapapp.ui.map
 
 import android.Manifest
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -26,6 +20,7 @@ import com.google.accompanist.permissions.shouldShowRationale
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
+import kotlinx.coroutines.launch
 
 /**
  * 地図画面
@@ -60,7 +55,7 @@ fun MapScreen(
         // 位置情報が許可されたらマップ表示
         // 位置情報が許可されていなければ、理由説明/マップが使用できない旨表示→リクエストで権限リクエスト画面表示
         if (permissionState.status.isGranted) {
-            MapView(currentLocation.value)
+            MapView(currentLocation.value, onValueChange = { viewModel.text.value = "hoge" })
         } else {
             Column(modifier = modifier.fillMaxSize()) {
 
@@ -83,8 +78,13 @@ fun MapScreen(
 /**
  * 地図
  */
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun MapView(locationDetail: LocationDetail?, modifier: Modifier = Modifier) {
+fun MapView(
+    locationDetail: LocationDetail?,
+    onValueChange: (String) -> Unit = {},
+    modifier: Modifier = Modifier
+) {
 
     val currentLocation = locationDetail?.let {
         val latitude = it.latitude.toDouble()
@@ -95,22 +95,73 @@ fun MapView(locationDetail: LocationDetail?, modifier: Modifier = Modifier) {
         val cameraPositionState = rememberCameraPositionState {
             position = CameraPosition.fromLatLngZoom(currentLocation, 15f)
         }
+        // ボトムシートの状態
+        val bottomState = rememberBottomSheetScaffoldState()
+        val coroutineScope = rememberCoroutineScope()
+
         // 現在地有効化
         val mapProperties by remember { mutableStateOf(MapProperties(isMyLocationEnabled = true)) }
         val uiSettings by remember { mutableStateOf(MapUiSettings(myLocationButtonEnabled = true)) }
         val tappedLocation = rememberMarkerState(position = LatLng(0.0, 0.0))
-        // マップ
-        GoogleMap(
-            modifier = modifier.fillMaxSize(),
-            cameraPositionState = cameraPositionState,
-            properties = mapProperties,
-            uiSettings = uiSettings,
-            onMapLongClick = {
-                tappedLocation.position = it
-            }
+
+        BottomSheetScaffold(
+            scaffoldState = bottomState,
+            sheetContent = { BottomSheetContent(onValueChange = onValueChange) },
+            drawerGesturesEnabled = true,
+            sheetPeekHeight = 0.dp
         ) {
-            Marker(state = tappedLocation, draggable = true)
+            // マップ
+            GoogleMap(
+                modifier = modifier.fillMaxSize(),
+                cameraPositionState = cameraPositionState,
+                properties = mapProperties,
+                uiSettings = uiSettings,
+                onMapLongClick = {
+                    tappedLocation.position = it
+                    coroutineScope.launch {
+                        bottomState.bottomSheetState.apply {
+                            if (isCollapsed) expand() else collapse()
+                        }
+                    }
+                }
+            ) {
+                Marker(state = tappedLocation, draggable = true)
+            }
         }
+
+    }
+}
+
+/**
+ * ModalBottomSheetLayoutの中身
+ */
+@Composable
+fun BottomSheetContent(
+    onValueChange: (String) -> Unit = {},
+    modifier: Modifier = Modifier
+) {
+    Column(modifier.padding(16.dp)) {
+        Row() {
+            Text("記録")
+        }
+        OutlinedTextField(
+            singleLine = true,
+            value = "",
+            onValueChange = onValueChange,
+            label = { Text("個体数") },
+            modifier = modifier
+                .padding(start = 8.dp)
+                .fillMaxWidth(1f),
+        )
+        OutlinedTextField(
+            singleLine = true,
+            value = "",
+            onValueChange = onValueChange,
+            label = { Text("メモ") },
+            modifier = modifier
+                .padding(start = 8.dp)
+                .fillMaxWidth(1f),
+        )
     }
 }
 

@@ -3,7 +3,9 @@ package com.demo.android.mapapp.viewmodel.map
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import com.demo.android.mapapp.model.location.LocationLiveData
+import com.demo.android.mapapp.repository.creature.CreatureRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Inject
 
 /**
@@ -14,10 +16,12 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class MapViewModel @Inject constructor(
+    private val repository: CreatureRepository,
     application: Application
 ) : AndroidViewModel(application) {
 
     private val locationLiveData = LocationLiveData(application)
+    var text = MutableStateFlow("")
 
     fun getLocationLiveData() = locationLiveData
     fun startLocation() {
