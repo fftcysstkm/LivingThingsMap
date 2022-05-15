@@ -16,6 +16,13 @@ class CreatureRepositoryImpl @Inject constructor(private val dao: CreatureDao) :
     }
 
     /**
+     * 生き物をIDで取得
+     */
+    override suspend fun getCreatureById(creatureId: Long): Creature {
+        return dao.getCreatureById(creatureId)
+    }
+
+    /**
      * 生き物リストに表示する生き物一覧を追加
      */
     override suspend fun addCreature(creature: Creature) {
