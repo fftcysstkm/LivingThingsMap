@@ -24,14 +24,15 @@ interface CreatureDao {
     fun getCreatures(): Flow<List<Creature>>
 
     /**
+     * 生き物をIDで取得
+     */
+    @Query("SELECT creatureId, categoryId, creatureName FROM Creature WHERE creatureId = :creatureId")
+    fun getCreatureById(creatureId: Long): Creature
+
+    /**
      * 生き物リストに表示する生き物を登録
      */
     @Insert
     suspend fun addCreature(creature: Creature)
 
-    /**
-     * 生き物追加画面に表示する生き物カテゴリーを取得
-     */
-//    @Query()
-//    fun getCategories(): Flow<List<Category>>
 }

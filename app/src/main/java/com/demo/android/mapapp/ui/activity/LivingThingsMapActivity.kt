@@ -5,9 +5,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.demo.android.mapapp.ui.add.AddCreatureScreen
 import com.demo.android.mapapp.ui.edit.EditCreatureScreen
 import com.demo.android.mapapp.ui.list.CreatureListScreen
@@ -41,7 +43,9 @@ fun MapApp() {
                 val viewModel = hiltViewModel<CreaturesListViewModel>()
                 CreatureListScreen(
                     viewModel = viewModel,
-                    onClickList = { navController.navigate("map") },
+                    onClickList = { creatureId, creatureName, categoryId ->
+                        navController.navigate("map/$creatureId/$creatureName/$categoryId")
+                    },
                     onClickFab = { navController.navigate("add") })
             }
             // 生き物追加
@@ -55,17 +59,29 @@ fun MapApp() {
             // 生き物編集(生き物IDを引数としてわたす)
             composable("edit/{creatureId}") { backStackEntry ->
                 val viewModel = hiltViewModel<EditCreatureViewModel>()
-                val creatureId = backStackEntry.arguments?.getString("creatureId")?.toInt() ?: 0
+                val creatureId =
+                    backStackEntry.arguments?.getString("creatureId")?.toInt() ?: 0
                 EditCreatureScreen(viewModel = viewModel, creatureId = creatureId)
             }
-            // マップ（位置情報記録、生き物IDを引数としてわたす）
-            composable("map") { backStackEntry ->
+            // マップ（生き物IDを引数としてわたす）
+            composable(
+                route = "map/{creatureId}/{creatureName}/{categoryId}",
+                arguments = listOf(
+                    navArgument("creatureId") { type = NavType.LongType },
+                    navArgument("creatureName") { type = NavType.StringType },
+                    navArgument("categoryId") { type = NavType.LongType },
+                )
+            ) { backStackEntry ->
                 val viewModel = hiltViewModel<MapViewModel>()
-                val creatureId = backStackEntry.arguments?.getString("creatureId")?.toInt() ?: 0
+                val creatureId = backStackEntry.arguments?.getLong("creatureId")
+                val creatureName = backStackEntry.arguments?.getString("creatureName")
+                val categoryId = backStackEntry.arguments?.getLong("categoryId")
                 MapScreen(
                     viewModel = viewModel,
                     onClickTopBarBack = { navController.popBackStack() },
-                    creatureId = creatureId
+                    creatureId = creatureId,
+                    creatureName = creatureName,
+                    categoryId = categoryId
                 )
             }
         }

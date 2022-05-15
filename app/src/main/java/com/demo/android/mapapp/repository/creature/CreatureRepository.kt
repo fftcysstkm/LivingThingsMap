@@ -10,6 +10,11 @@ interface CreatureRepository {
     fun getCreatures(): Flow<List<Creature>>
 
     /**
+     * 生き物をIDで取得
+     */
+    suspend fun getCreatureById(creatureId: Long): Creature
+
+    /**
      * 生き物リストに表示する生き物一覧を追加
      */
     suspend fun addCreature(creature: Creature)

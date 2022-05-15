@@ -32,7 +32,9 @@ import kotlinx.coroutines.launch
 fun MapScreen(
     viewModel: MapViewModel,
     onClickTopBarBack: () -> Unit,
-    creatureId: Int,
+    creatureId: Long?,
+    creatureName: String?,
+    categoryId: Long?,
     modifier: Modifier = Modifier
 ) {
 
@@ -93,7 +95,7 @@ fun MapView(
     }
     if (currentLocation != null) {
         val cameraPositionState = rememberCameraPositionState {
-            position = CameraPosition.fromLatLngZoom(currentLocation, 15f)
+            position = CameraPosition.fromLatLngZoom(currentLocation, 17f)
         }
         // ボトムシートの状態
         val bottomState = rememberBottomSheetScaffoldState()
