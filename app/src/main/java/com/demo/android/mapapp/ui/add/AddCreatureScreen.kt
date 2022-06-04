@@ -217,7 +217,7 @@ fun RowItem(
     inputTxt: String,
     singleLine: Boolean,
     label: String,
-    onValueChange: (String) -> Unit = {},
+    onValueChange: (String) -> Unit,
     modifier: Modifier
 ) {
     Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier.padding(top = 8.dp)) {
