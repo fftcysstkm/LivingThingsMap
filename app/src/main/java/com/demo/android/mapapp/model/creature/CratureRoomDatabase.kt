@@ -8,7 +8,11 @@ import com.demo.android.mapapp.util.LocalDateTimeTypeConverter
 /**
  * 生き物Daoをインスタンス化するデータベースクラス
  */
-@Database(entities = [CreatureType::class, Creature::class], version = 1, exportSchema = false)
+@Database(
+    entities = [Category::class, Creature::class, CreatureDetail::class],
+    version = 1,
+    exportSchema = false
+)
 @TypeConverters(LocalDateTimeTypeConverter::class)
 abstract class CreatureRoomDatabase : RoomDatabase() {
     /**
