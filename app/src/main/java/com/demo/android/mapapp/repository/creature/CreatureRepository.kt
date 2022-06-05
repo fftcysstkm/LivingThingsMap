@@ -27,4 +27,9 @@ interface CreatureRepository {
      * 生き物の詳細情報（位置情報や個体数など）を登録
      */
     suspend fun addCreatureDetail(creatureDetail: CreatureDetail)
+
+    /**
+     * 生き物詳細情報（位置情報や個体数など）リストを生き物IDで取得
+     */
+    suspend fun getCreatureDetails(creatureId: Long): Flow<List<CreatureDetail>>
 }

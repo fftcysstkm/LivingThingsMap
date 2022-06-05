@@ -25,6 +25,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.demo.android.mapapp.R
+import com.demo.android.mapapp.model.creature.CreatureDetail
 import com.demo.android.mapapp.model.date.RecordDate
 import com.demo.android.mapapp.model.location.LocationDetail
 import com.demo.android.mapapp.ui.add.CreateTopBar
@@ -59,6 +60,8 @@ fun MapScreen(
     val currentLocation =
         viewModel.getLocationLiveData().observeAsState()
 
+    val creatureList = viewModel.creatureList.collectAsState()
+
     val state by viewModel.state.collectAsState()
 
     // scaffoldの状態
@@ -83,6 +86,7 @@ fun MapScreen(
         if (permissionState.status.isGranted) {
             MapView(
                 state,
+                creatureList.value,
                 bottomSheetScaffoldState,
                 currentLocation.value,
                 onMapLongClick = { position ->
@@ -140,6 +144,7 @@ fun MapScreen(
 @Composable
 fun MapView(
     state: AddRecordState,
+    creatureList: List<CreatureDetail>,
     bottomSheetScaffoldState: BottomSheetScaffoldState,
     locationDetail: LocationDetail?,
     onMapLongClick: (position: LatLng) -> Unit,
@@ -192,7 +197,16 @@ fun MapView(
                     onMapLongClick(it)
                 }
             ) {
+                // タップした位置情報のマーカー
                 Marker(state = MarkerState(state.tappedLocation), draggable = true)
+
+                // 記録済みのマーカーを表示
+                creatureList.forEach { creature ->
+                    val position = LatLng(creature.latitude, creature.longitude)
+                    Marker(state = MarkerState(position = position), draggable = false)
+                }
+
+
             }
         }
     }
@@ -408,7 +422,11 @@ fun Memo(
 @Preview
 @Composable
 fun PreviewBottomSheet(modifier: Modifier = Modifier) {
-    val state = AddRecordState(creatureId = 1, categoryId = 1, creatureName = "Test")
+    val state = AddRecordState(
+        creatureId = 1,
+        categoryId = 1,
+        creatureName = "Test"
+    )
     val onValueChange: (String) -> Unit = { }
     val onDateChange: (year: Int, month: Int, dayOfMonth: Int) -> Unit = { _, _, _ -> }
     val onTimeChange: (hour: Int, minute: Int) -> Unit = { _, _ -> }

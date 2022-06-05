@@ -40,5 +40,7 @@ class CreatureRepositoryImpl @Inject constructor(private val dao: CreatureDao) :
         dao.addCreatureDetail(creatureDetail)
     }
 
-
+    override suspend fun getCreatureDetails(creatureId: Long): Flow<List<CreatureDetail>> {
+        return dao.getCreatureDetails(creatureId)
+    }
 }
