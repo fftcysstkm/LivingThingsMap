@@ -1,22 +1,31 @@
 package com.demo.android.mapapp.ui.add
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.demo.android.mapapp.R
+import com.demo.android.mapapp.viewmodel.add.AddCreatureScreenState
 import com.demo.android.mapapp.viewmodel.add.AddCreatureViewModel
 
 /**
  * 生き物を追加する画面
  * 参考：https://blog.mokelab.com/71/compose_todo9.html
+ * @param viewModel
+ * @param onClickTopBarBack 前の画面に戻る処理
+ * @param modifier
  */
 @Composable
 fun AddCreatureScreen(
@@ -27,30 +36,22 @@ fun AddCreatureScreen(
 
     // scaffoldの状態
     val scaffoldState = rememberScaffoldState()
-
-    // エラーメッセージと保存完了フラグを監視
-    val errorMessage = viewModel.errorMessage.collectAsState()
-    val done = viewModel.done.collectAsState()
-
-    // 入力中の値を保持
-    // 生き物のタイプ、名前、備考
-    val inputTypeTxt = rememberSaveable { mutableStateOf("") }
-    val inputNameTxt = rememberSaveable { mutableStateOf("") }
-    val inputMemoTxt = rememberSaveable { mutableStateOf("") }
+    // 監視するUIの状態(変更があった場合、UIを再Compose)
+    val state by viewModel.state.collectAsState()
 
     // viewmodelのエラーメッセージを監視
     // メッセージがある場合はスナックバーで表示
-    if (errorMessage.value.isNotEmpty()) {
+    if (state.errorMessage.isNotEmpty()) {
         LaunchedEffect(scaffoldState.snackbarHostState) {
             scaffoldState.snackbarHostState.showSnackbar(
-                message = errorMessage.value
+                message = state.errorMessage
             )
-            // 画面回転など再Compose時に再度表示されるのを抑制
-            viewModel.errorMessage.value = ""
+            // 画面回転など再Compose時に再度表示されるのを抑制する
+            viewModel.resetErrorMessage()
         }
     }
     // 再コンポーズ時にもう一度保存されるのを防止
-    if (done.value) {
+    if (state.done) {
         viewModel.resetDoneValue()
         onClickTopBarBack()
     }
@@ -63,8 +64,19 @@ fun AddCreatureScreen(
             CreateTopBar(onClickTopBarBack)
         }) {
         // 入力欄
-        AddCreatureBody(inputTypeTxt, inputNameTxt, inputMemoTxt, modifier) {
-            viewModel.save(inputTypeTxt.value, inputNameTxt.value)
+        AddCreatureBody(
+            state,
+            onOptionSelected = { index, selected ->
+                viewModel.updateSelectedOption(
+                    index,
+                    selected
+                )
+            },
+            onInputNameChange = { name -> viewModel.updateCreatureName(name) },
+            onInputMemoChange = { memo -> viewModel.updateMemo(memo) },
+            modifier = modifier
+        ) {
+            viewModel.save(state.creatureName, state.selectedIndex, state.memo)
         }
     }
 }
@@ -96,41 +108,38 @@ fun CreateTopBar(onClickTopBarBack: () -> Unit) {
  */
 @Composable
 fun AddCreatureBody(
-    inputTypeTxt: MutableState<String>,
-    inputNameTxt: MutableState<String>,
-    inputMemoTxt: MutableState<String>,
+    state: AddCreatureScreenState,
+    onOptionSelected: (Int, String) -> Unit,
+    onInputNameChange: (String) -> Unit,
+    onInputMemoChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     save: () -> Unit,
 ) {
-    Column(modifier = modifier.padding(8.dp)) {
-        // 生きものタイプ
-        RowItem(
-            iconId = R.drawable.ic_category_24,
-            contentDescription = "",
-            inputTxt = inputTypeTxt.value,
-            singleLine = true,
-            label = "生き物のタイプ",
-            onValueChange = { inputTypeTxt.value = it },
-            modifier = modifier
+    Column(modifier = modifier.padding(16.dp)) {
+        // 生き物カテゴリー
+        CategoryRadioButton(
+            radioOptions = state.categories,
+            selectedOption = state.selected,
+            onOptionSelected = onOptionSelected
         )
         // 生き物の名前
         RowItem(
             iconId = R.drawable.ic_abc_24,
             contentDescription = "",
-            inputTxt = inputNameTxt.value,
+            inputTxt = state.creatureName,
             singleLine = true,
             label = "生き物の名前",
-            onValueChange = { inputNameTxt.value = it },
+            onValueChange = onInputNameChange,
             modifier = modifier
         )
         // 備考
         RowItem(
             iconId = R.drawable.ic_edit_note_24,
             contentDescription = "",
-            inputTxt = inputMemoTxt.value,
+            inputTxt = state.memo,
             singleLine = false,
             label = "備考",
-            onValueChange = { inputMemoTxt.value = it },
+            onValueChange = onInputMemoChange,
             modifier = modifier
         )
         // 追加ボタン(押下時の処理は親で記述)
@@ -146,6 +155,59 @@ fun AddCreatureBody(
 }
 
 /**
+ * 生きものカテゴリーのラジオボタン
+ *
+ */
+@Composable
+fun CategoryRadioButton(
+    radioOptions: List<String>,
+    selectedOption: String,
+    onOptionSelected: (Int, String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(verticalAlignment = Alignment.Top) {
+
+        // アイコン
+        Column(modifier = modifier.padding(top = 4.dp)) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_category_24),
+                contentDescription = ""
+            )
+        }
+
+        // ラジオボタン用意(選択肢の数だけ用意)
+        Column(modifier.selectableGroup()) {
+            radioOptions.forEachIndexed { index, text ->
+                Row(
+                    modifier
+                        .fillMaxWidth()
+                        .height(36.dp)
+                        .selectable(
+                            selected = (text == selectedOption),
+                            onClick = { onOptionSelected(index, text) },
+                            role = Role.RadioButton
+                        ),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // ラジオボタン
+                    RadioButton(
+                        selected = (text == selectedOption),
+                        onClick = null,
+                        modifier = modifier.padding(start = 8.dp)
+                    )
+                    // ラベル
+                    Text(
+                        text = text,
+                        style = MaterialTheme.typography.body1.merge(),
+                        modifier = modifier.padding(start = 8.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+/**
  * アイコンとテキスト入力欄部品
  */
 @Composable
@@ -155,7 +217,7 @@ fun RowItem(
     inputTxt: String,
     singleLine: Boolean,
     label: String,
-    onValueChange: (String) -> Unit = {},
+    onValueChange: (String) -> Unit,
     modifier: Modifier
 ) {
     Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier.padding(top = 8.dp)) {
@@ -174,11 +236,3 @@ fun RowItem(
         )
     }
 }
-
-//@Preview(showBackground = true)
-//@Composable
-//fun DefaultPreview() {
-//    LivingThingsMapTheme {
-//        AddCreatureScreen()
-//    }
-//}

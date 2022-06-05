@@ -27,7 +27,7 @@ import com.demo.android.mapapp.viewmodel.list.CreaturesListViewModel
 @Composable
 fun CreatureListScreen(
     viewModel: CreaturesListViewModel,
-    onClickList: () -> Unit,
+    onClickList: (Long, String, Long) -> Unit,
     onClickFab: () -> Unit
 ) {
     // 監視する生き物リスト（Flowが最初のデータを流してくるまでの間初期値として扱う空のリストを設定）
@@ -49,14 +49,20 @@ fun CreatureListScreen(
 @Composable
 fun CreaturesList(
     list: State<List<Creature>>,
-    onClickList: () -> Unit,
+    onClickList: (Long, String, Long) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyColumn {
         items(list.value) { creature ->
             CreatureCard(
                 creatureName = creature.creatureName,
-                modifier = modifier.clickable { onClickList() })
+                modifier = modifier.clickable {
+                    onClickList(
+                        creature.creatureId,
+                        creature.creatureName,
+                        creature.categoryId
+                    )
+                })
         }
     }
 }
