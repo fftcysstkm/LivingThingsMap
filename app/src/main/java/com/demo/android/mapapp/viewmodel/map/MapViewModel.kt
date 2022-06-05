@@ -11,8 +11,7 @@ import com.demo.android.mapapp.model.location.LocationLiveData
 import com.demo.android.mapapp.repository.creature.CreatureRepository
 import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
@@ -51,6 +50,11 @@ class MapViewModel @Inject constructor(
     val categoryId: Long = requireNotNull(savedStateHandle.get<Long>("categoryId"))
 
     private val locationLiveData = LocationLiveData(application)
+
+    val creatureList = flow {
+        val list = repository.getCreatureDetails(creatureId)
+        emitAll(list)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     private val _state = MutableStateFlow(
         AddRecordState(
