@@ -10,7 +10,6 @@ import com.demo.android.mapapp.model.date.RecordDate
 import com.demo.android.mapapp.model.location.LocationLiveData
 import com.demo.android.mapapp.repository.creature.CreatureRepository
 import com.google.android.gms.maps.model.LatLng
-import com.google.maps.android.compose.MarkerState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -28,7 +27,7 @@ data class AddRecordState(
     val creatureNum: Int = 1,
     val detailMemo: String = "",
     val recordedAt: RecordDate = RecordDate(Calendar.getInstance()),
-    val tappedLocation: MarkerState = MarkerState(position = LatLng(0.0, 0.0)),
+    val tappedLocation: LatLng = LatLng(0.0, 0.0),
     val done: Boolean = false,
     val errorMessage: String = ""
 )
@@ -82,8 +81,8 @@ class MapViewModel @Inject constructor(
             creatureNum = _state.value.creatureNum,
             detailMemo = _state.value.detailMemo,
             recordedAt = _state.value.recordedAt.toString(),
-            longitude = _state.value.tappedLocation.position.longitude,
-            latitude = _state.value.tappedLocation.position.latitude
+            longitude = _state.value.tappedLocation.longitude,
+            latitude = _state.value.tappedLocation.latitude
         )
 
         // 生き物詳細を保存
@@ -105,7 +104,7 @@ class MapViewModel @Inject constructor(
     fun updateTappedLocation(position: LatLng) {
         updateState {
             currentState().copy(
-                tappedLocation = MarkerState(position = position)
+                tappedLocation = position
             )
         }
     }
@@ -155,7 +154,7 @@ class MapViewModel @Inject constructor(
     }
 
     /**
-     * 「メモ」の文字を変更する
+     * 「メモ」のテキストフィールドの値を変更する
      */
     fun updateMemo(memo: String) {
         updateState { currentState().copy(detailMemo = memo) }

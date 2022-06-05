@@ -67,7 +67,7 @@ fun MapScreen(
     // 位置情報が許可されたかを監視(ACCESS_FINE_LOCATIONが許可されればACCESS_COARSE_LOCATIONも許可される)
     val permissionState = rememberPermissionState(Manifest.permission.ACCESS_FINE_LOCATION)
 
-    // ボトムシートの状態
+    // ボトムシートの状態、開閉操作に必要なcoroutineScope
     val bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
     val coroutineScope = rememberCoroutineScope()
 
@@ -103,7 +103,15 @@ fun MapScreen(
                 onDecrement = { viewModel.decreaseCreatureNum() },
                 onIncrement = { viewModel.increaseCreatureNum() },
                 onValueChange = { memo -> viewModel.updateMemo(memo) },
-                onSaveRecord = { viewModel.addCreatureDetail() }
+                onSaveRecord = {
+                    // 保存ボタンで位置情報記録、ボトムシートを閉じる todo ロングタップで出したマーカーを消す
+                    viewModel.addCreatureDetail()
+                    coroutineScope.launch {
+                        bottomSheetScaffoldState.bottomSheetState.apply {
+                            if (isCollapsed) expand() else collapse()
+                        }
+                    }
+                }
             )
         } else {
             Column(modifier = modifier.fillMaxSize()) {
@@ -184,7 +192,7 @@ fun MapView(
                     onMapLongClick(it)
                 }
             ) {
-                Marker(state = state.tappedLocation, draggable = true)
+                Marker(state = MarkerState(state.tappedLocation), draggable = true)
             }
         }
     }
