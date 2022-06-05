@@ -45,7 +45,7 @@ import kotlinx.coroutines.launch
  * https://google.github.io/accompanist/permissions/
  */
 @RequiresApi(Build.VERSION_CODES.N)
-@OptIn(ExperimentalPermissionsApi::class)
+@OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterialApi::class)
 @Composable
 fun MapScreen(
     viewModel: MapViewModel,
@@ -67,6 +67,10 @@ fun MapScreen(
     // 位置情報が許可されたかを監視(ACCESS_FINE_LOCATIONが許可されればACCESS_COARSE_LOCATIONも許可される)
     val permissionState = rememberPermissionState(Manifest.permission.ACCESS_FINE_LOCATION)
 
+    // ボトムシートの状態
+    val bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
+    val coroutineScope = rememberCoroutineScope()
+
     // 画面本体
     Scaffold(
         scaffoldState = scaffoldState,
@@ -79,8 +83,17 @@ fun MapScreen(
         if (permissionState.status.isGranted) {
             MapView(
                 state,
+                bottomSheetScaffoldState,
                 currentLocation.value,
-                modifier,
+                onMapLongClick = { position ->
+                    // 地図ロングクリックでStateの緯度経度更新、ボトムシート開閉
+                    viewModel.updateTappedLocation(position)
+                    coroutineScope.launch {
+                        bottomSheetScaffoldState.bottomSheetState.apply {
+                            if (isCollapsed) expand() else collapse()
+                        }
+                    }
+                },
                 onDateChange = { year: Int, month: Int, dayOfMonth: Int ->
                     viewModel.updateRecordedAtDate(year, month, dayOfMonth)
                 },
@@ -90,7 +103,7 @@ fun MapScreen(
                 onDecrement = { viewModel.decreaseCreatureNum() },
                 onIncrement = { viewModel.increaseCreatureNum() },
                 onValueChange = { memo -> viewModel.updateMemo(memo) },
-                onSaveRecord = {}
+                onSaveRecord = { viewModel.addCreatureDetail() }
             )
         } else {
             Column(modifier = modifier.fillMaxSize()) {
@@ -119,14 +132,16 @@ fun MapScreen(
 @Composable
 fun MapView(
     state: AddRecordState,
+    bottomSheetScaffoldState: BottomSheetScaffoldState,
     locationDetail: LocationDetail?,
-    modifier: Modifier = Modifier,
+    onMapLongClick: (position: LatLng) -> Unit,
     onDateChange: (year: Int, month: Int, dayOfMonth: Int) -> Unit,
     onTimeChange: (hour: Int, minute: Int) -> Unit,
     onDecrement: () -> Unit,
     onIncrement: () -> Unit,
     onValueChange: (String) -> Unit,
-    onSaveRecord: () -> Unit
+    onSaveRecord: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
 
     val currentLocation = locationDetail?.let {
@@ -138,17 +153,13 @@ fun MapView(
         val cameraPositionState = rememberCameraPositionState {
             position = CameraPosition.fromLatLngZoom(currentLocation, 17f)
         }
-        // ボトムシートの状態
-        val bottomState = rememberBottomSheetScaffoldState()
-        val coroutineScope = rememberCoroutineScope()
 
         // 現在地有効化
         val mapProperties by remember { mutableStateOf(MapProperties(isMyLocationEnabled = true)) }
         val uiSettings by remember { mutableStateOf(MapUiSettings(myLocationButtonEnabled = true)) }
-        val tappedLocation = rememberMarkerState(position = LatLng(0.0, 0.0))
 
         BottomSheetScaffold(
-            scaffoldState = bottomState,
+            scaffoldState = bottomSheetScaffoldState,
             sheetContent = {
                 BottomSheetContent(
                     onValueChange = onValueChange,
@@ -170,15 +181,10 @@ fun MapView(
                 properties = mapProperties,
                 uiSettings = uiSettings,
                 onMapLongClick = {
-                    tappedLocation.position = it
-                    coroutineScope.launch {
-                        bottomState.bottomSheetState.apply {
-                            if (isCollapsed) expand() else collapse()
-                        }
-                    }
+                    onMapLongClick(it)
                 }
             ) {
-                Marker(state = tappedLocation, draggable = true)
+                Marker(state = state.tappedLocation, draggable = true)
             }
         }
     }
@@ -340,7 +346,11 @@ fun CreatureNumber(
         }
 
         // 生き物の数
-        Text(creatureNumber.toString(), modifier.padding(horizontal = 24.dp), fontSize = fontSize)
+        Text(
+            creatureNumber.toString(),
+            modifier.padding(horizontal = 24.dp),
+            fontSize = fontSize
+        )
 
         // プラスボタン
         OutlinedButton(

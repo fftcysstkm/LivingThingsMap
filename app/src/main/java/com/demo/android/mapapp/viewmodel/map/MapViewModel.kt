@@ -1,15 +1,20 @@
 package com.demo.android.mapapp.viewmodel.map
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.viewModelScope
+import com.demo.android.mapapp.model.creature.CreatureDetail
 import com.demo.android.mapapp.model.date.RecordDate
 import com.demo.android.mapapp.model.location.LocationLiveData
 import com.demo.android.mapapp.repository.creature.CreatureRepository
 import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.MarkerState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
 
@@ -23,9 +28,9 @@ data class AddRecordState(
     val creatureNum: Int = 1,
     val detailMemo: String = "",
     val recordedAt: RecordDate = RecordDate(Calendar.getInstance()),
-    val latLng: LatLng = LatLng(0.0, 0.0),
-    val stringInDatePicker: String = "",
-    val done: Boolean = false
+    val tappedLocation: MarkerState = MarkerState(position = LatLng(0.0, 0.0)),
+    val done: Boolean = false,
+    val errorMessage: String = ""
 )
 
 /**
@@ -65,6 +70,44 @@ class MapViewModel @Inject constructor(
     fun getLocationLiveData() = locationLiveData
     fun startLocation() {
         locationLiveData.startLocationUpdates()
+    }
+
+    /**
+     * タップした位置の生物の情報を記録する
+     */
+    fun addCreatureDetail() {
+        val creatureDetail = CreatureDetail(
+            creatureDetailId = 0,
+            creatureId = _state.value.creatureId,
+            creatureNum = _state.value.creatureNum,
+            detailMemo = _state.value.detailMemo,
+            recordedAt = _state.value.recordedAt.toString(),
+            longitude = _state.value.tappedLocation.position.longitude,
+            latitude = _state.value.tappedLocation.position.latitude
+        )
+
+        // 生き物詳細を保存
+        viewModelScope.launch {
+            try {
+                repository.addCreatureDetail(creatureDetail)
+                updateState { currentState().copy(done = true) }
+                Log.d("creatureDetail", "insert success")
+            } catch (e: Exception) {
+                updateState { currentState().copy(errorMessage = e.message ?: "") }
+            }
+        }
+    }
+
+    /**
+     * マーカーの位置を更新する（タップ時）
+     * @param position タップした位置情報
+     */
+    fun updateTappedLocation(position: LatLng) {
+        updateState {
+            currentState().copy(
+                tappedLocation = MarkerState(position = position)
+            )
+        }
     }
 
     /**

@@ -26,6 +26,7 @@ interface CreatureDao {
     /**
      * 生き物をIDで取得
      */
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("SELECT creatureId, categoryId, creatureName FROM Creature WHERE creatureId = :creatureId")
     fun getCreatureById(creatureId: Long): Creature
 
@@ -34,5 +35,11 @@ interface CreatureDao {
      */
     @Insert
     suspend fun addCreature(creature: Creature)
+
+    /**
+     * 生き物の詳細情報（位置情報）を登録
+     */
+    @Insert
+    suspend fun addCreatureDetail(creatureDetail: CreatureDetail)
 
 }
