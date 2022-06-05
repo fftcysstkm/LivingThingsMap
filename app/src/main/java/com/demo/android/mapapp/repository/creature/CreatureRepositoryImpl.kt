@@ -2,9 +2,13 @@ package com.demo.android.mapapp.repository.creature
 
 import com.demo.android.mapapp.model.creature.Creature
 import com.demo.android.mapapp.model.creature.CreatureDao
+import com.demo.android.mapapp.model.creature.CreatureDetail
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
+/**
+ * 生き物のリポジトリ（実装）
+ */
 class CreatureRepositoryImpl @Inject constructor(private val dao: CreatureDao) :
     CreatureRepository {
 
@@ -28,4 +32,13 @@ class CreatureRepositoryImpl @Inject constructor(private val dao: CreatureDao) :
     override suspend fun addCreature(creature: Creature) {
         dao.addCreature(creature)
     }
+
+    /**
+     * 生き物の詳細情報（位置情報や個体数など）を登録
+     */
+    override suspend fun addCreatureDetail(creatureDetail: CreatureDetail) {
+        dao.addCreatureDetail(creatureDetail)
+    }
+
+
 }
