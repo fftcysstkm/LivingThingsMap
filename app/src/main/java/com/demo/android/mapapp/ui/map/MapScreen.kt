@@ -18,6 +18,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -168,8 +169,16 @@ fun MapView(
         }
 
         // 現在地有効化
-        val mapProperties by remember { mutableStateOf(MapProperties(isMyLocationEnabled = true)) }
-        val uiSettings by remember { mutableStateOf(MapUiSettings(myLocationButtonEnabled = true)) }
+        var mapProperties by remember {
+            mutableStateOf(
+                MapProperties(
+                    isMyLocationEnabled = true,
+                    mapType = MapType.SATELLITE
+                )
+            )
+        }
+        var uiSettings by remember { mutableStateOf(MapUiSettings(myLocationButtonEnabled = true)) }
+        var isMapTypeSatellite by remember { mutableStateOf(true) }
 
         BottomSheetScaffold(
             scaffoldState = bottomSheetScaffoldState,
@@ -187,26 +196,49 @@ fun MapView(
             drawerGesturesEnabled = true,
             sheetPeekHeight = 0.dp,
         ) {
+
             // マップ
-            GoogleMap(
-                modifier = modifier.fillMaxSize(),
-                cameraPositionState = cameraPositionState,
-                properties = mapProperties,
-                uiSettings = uiSettings,
-                onMapLongClick = {
-                    onMapLongClick(it)
+            Box(modifier = Modifier) {
+                GoogleMap(
+                    modifier = modifier.fillMaxSize(),
+                    cameraPositionState = cameraPositionState,
+                    properties = mapProperties,
+                    uiSettings = uiSettings,
+                    onMapLongClick = {
+                        onMapLongClick(it)
+                    }
+                ) {
+
+                    // タップした位置情報のマーカー
+                    Marker(state = MarkerState(state.tappedLocation), draggable = true)
+
+                    // 記録済みのマーカーを表示
+                    creatureList.forEach { creature ->
+                        val position = LatLng(creature.latitude, creature.longitude)
+                        Marker(state = MarkerState(position = position), draggable = false)
+                    }
                 }
-            ) {
-                // タップした位置情報のマーカー
-                Marker(state = MarkerState(state.tappedLocation), draggable = true)
 
-                // 記録済みのマーカーを表示
-                creatureList.forEach { creature ->
-                    val position = LatLng(creature.latitude, creature.longitude)
-                    Marker(state = MarkerState(position = position), draggable = false)
+                // 衛星写真切り替えスイッチ
+                Row(
+                    modifier
+                        .padding(top = 64.dp, end = 8.dp)
+                        .fillMaxWidth(1f),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(text = "Satellite")
+                        Switch(
+                            isMapTypeSatellite,
+                            onCheckedChange = {
+                                val mapType = if (it) MapType.SATELLITE else MapType.NORMAL
+                                mapProperties = mapProperties.copy(mapType = mapType)
+                                isMapTypeSatellite = !isMapTypeSatellite
+                            },
+                            colors = SwitchDefaults.colors(uncheckedTrackColor = Color.DarkGray)
+                        )
+                    }
                 }
-
-
             }
         }
     }

@@ -28,6 +28,7 @@ data class AddRecordState(
     val recordedAt: RecordDate = RecordDate(Calendar.getInstance()),
     val tappedLocation: LatLng = LatLng(0.0, 0.0),
     val done: Boolean = false,
+    val isNormalMap: Boolean = false,
     val errorMessage: String = ""
 )
 
