@@ -32,7 +32,7 @@ data class DetailRecordState @RequiresApi(Build.VERSION_CODES.O) constructor(
     val recordedAt: RecordDateTime = RecordDateTime(LocalDateTime.now()),
     val location: LatLng = LatLng(0.0, 0.0),
     val done: Boolean = false,
-    val isNormalMap: Boolean = false,
+    val isMapTypeSatellite: Boolean = true,
     val isUpdateMode: Boolean = false,
     val errorMessage: String = ""
 )
@@ -88,6 +88,14 @@ class MapViewModel @Inject constructor(
     fun getLocationLiveData() = locationLiveData
     fun startLocation() {
         locationLiveData.startLocationUpdates()
+    }
+
+    /**
+     * マップを衛星写真か通常写真かを入れ替える
+     * デフォルトは衛星写真
+     */
+    fun changeMapType() {
+        updateState { currentState().copy(isMapTypeSatellite = !_state.value.isMapTypeSatellite) }
     }
 
     /**

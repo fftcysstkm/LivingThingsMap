@@ -74,6 +74,9 @@ fun MapScreen(
     // 位置情報が許可されたかを監視(ACCESS_FINE_LOCATIONが許可されればACCESS_COARSE_LOCATIONも許可される)
     val permissionState = rememberPermissionState(Manifest.permission.ACCESS_FINE_LOCATION)
 
+    // マップのUIセッティング（現在地ボタン有効化）
+    val uiSettings by remember { mutableStateOf(MapUiSettings(myLocationButtonEnabled = true)) }
+
     // ボトムシートの状態、開閉操作に必要なcoroutineScope
     val bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
     val coroutineScope = rememberCoroutineScope()
@@ -90,6 +93,7 @@ fun MapScreen(
         if (permissionState.status.isGranted) {
             MapView(
                 viewModel,
+                uiSettings,
                 state,
                 creatureList.value,
                 bottomSheetScaffoldState,
@@ -103,6 +107,7 @@ fun MapScreen(
                             if (isCollapsed) expand()
                         }
                     }
+
                 },
                 onDateChange = { year: Int, month: Int, dayOfMonth: Int ->
                     viewModel.updateRecordedAtDate(year, month, dayOfMonth)
@@ -173,6 +178,7 @@ fun MapScreen(
 @Composable
 fun MapView(
     viewModel: MapViewModel,
+    uiSettings: MapUiSettings,
     state: DetailRecordState,
     creatureList: List<CreatureDetail>,
     bottomSheetScaffoldState: BottomSheetScaffoldState,
@@ -209,9 +215,8 @@ fun MapView(
                 )
             )
         }
-        var uiSettings by remember { mutableStateOf(MapUiSettings(myLocationButtonEnabled = true)) }
-        var isMapTypeSatellite by remember { mutableStateOf(true) }
 
+        // ボトムシート本体（マップロングクリク時に表示）
         BottomSheetScaffold(
             scaffoldState = bottomSheetScaffoldState,
             sheetContent = {
@@ -258,7 +263,7 @@ fun MapView(
                                 viewModel.updateStateForEditCreature(creature)
                                 coroutineScope.launch {
                                     bottomSheetScaffoldState.bottomSheetState.apply {
-                                        if (isCollapsed) expand() else collapse()
+                                        if (isCollapsed) expand()
                                     }
                                 }
                                 false
@@ -277,11 +282,11 @@ fun MapView(
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(text = "Satellite")
                         Switch(
-                            isMapTypeSatellite,
+                            state.isMapTypeSatellite,
                             onCheckedChange = {
                                 val mapType = if (it) MapType.SATELLITE else MapType.NORMAL
                                 mapProperties = mapProperties.copy(mapType = mapType)
-                                isMapTypeSatellite = !isMapTypeSatellite
+                                viewModel.changeMapType()
                             },
                             colors = SwitchDefaults.colors(uncheckedTrackColor = Color.DarkGray)
                         )
