@@ -22,7 +22,7 @@ class CreatureRepositoryImpl @Inject constructor(private val dao: CreatureDao) :
     /**
      * 生き物をIDで取得
      */
-    override suspend fun getCreatureById(creatureId: Long): Creature {
+    override fun getCreatureById(creatureId: Long): Creature {
         return dao.getCreatureById(creatureId)
     }
 
@@ -40,7 +40,24 @@ class CreatureRepositoryImpl @Inject constructor(private val dao: CreatureDao) :
         dao.addCreatureDetail(creatureDetail)
     }
 
-    override suspend fun getCreatureDetails(creatureId: Long): Flow<List<CreatureDetail>> {
+    /**
+     * 生き物の詳細情報（位置情報や個体数など）を登録
+     */
+    override fun getCreatureDetails(creatureId: Long): Flow<List<CreatureDetail>> {
         return dao.getCreatureDetails(creatureId)
+    }
+
+    /**
+     * 生き物の詳細情報（位置情報や個体数など）を更新
+     */
+    override suspend fun updateCreatureDetail(creatureDetail: CreatureDetail): Int {
+        return dao.updateCreatureDetail(creatureDetail)
+    }
+
+    /**
+     * 生き物の詳細情報（位置情報や個体数など）を削除
+     */
+    override suspend fun deleteCreatureDetail(creatureDetail: CreatureDetail): Int {
+        return dao.deleteCreatureDetail(creatureDetail)
     }
 }
