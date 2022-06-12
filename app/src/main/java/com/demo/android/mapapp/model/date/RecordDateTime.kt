@@ -1,22 +1,20 @@
 package com.demo.android.mapapp.model.date
 
 import android.annotation.SuppressLint
-import java.time.LocalDate
-import java.time.LocalTime
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 /**
  * 生き物の記録日データクラス
- * DatePickerを扱いやすくするLocalDateクラス
- * TimePickerを扱いやすくするLocalTimeクラスを持つ
+ * 画面用に使用する文字列のフォーマットメソッドを持つ
  */
-data class RecordDateTime(val recordDate: LocalDate, val recordTime: LocalTime) {
+data class RecordDateTime(val dateTime: LocalDateTime) {
     /**
-     * ボトムシートに表示する日時の文字列を取得
+     * ボトムシートに表示する日時の文字列を取得(yyyy/MM/dd)
      */
     @SuppressLint("NewApi")
     fun dateString(): String {
-        return recordDate.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"))
+        return dateTime.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"))
     }
 
     /**
@@ -24,7 +22,7 @@ data class RecordDateTime(val recordDate: LocalDate, val recordTime: LocalTime) 
      */
     @SuppressLint("NewApi")
     fun timeString(): String {
-        return recordTime.format(DateTimeFormatter.ofPattern("hh:mm"))
+        return dateTime.format(DateTimeFormatter.ofPattern("hh:mm"))
     }
 
 }

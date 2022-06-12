@@ -211,10 +211,11 @@ fun MapView(
                     }
                 ) {
 
-                    // マップロングクリックした位置情報のマーカー
+                    // 記録したい生き物のマーカーを表示（マップロングクリックで表示）
                     Marker(state = MarkerState(state.tappedLocation), draggable = true)
 
-                    // 記録済みのマーカーを表示。クリックでボトムシート表示、記録済み情報を表示
+                    // 記録済みのマーカーを表示。マーカークリックでボトムシート表示、記録済み情報を表示
+                    // onClickでstateの生き物情報を、クリックしたマーカーの情報に変更。削除、更新可能となる
                     creatureList.forEach { creature ->
                         val position = LatLng(creature.latitude, creature.longitude)
                         Marker(state = MarkerState(position = position), draggable = false)
@@ -344,14 +345,15 @@ fun datePicker(
     recordDateTime: RecordDateTime,
     onDateChange: (year: Int, month: Int, dayOfMonth: Int) -> Unit,
 ) {
+    // 月は-1することで現実の日付になる
     DatePickerDialog(
         context,
         { _: DatePicker, year: Int, month: Int, dayOfMonth: Int ->
             onDateChange(year, month, dayOfMonth)
         },
-        recordDateTime.recordDate.year,
-        recordDateTime.recordDate.monthValue,
-        recordDateTime.recordDate.dayOfMonth
+        recordDateTime.dateTime.year,
+        recordDateTime.dateTime.monthValue - 1,
+        recordDateTime.dateTime.dayOfMonth
     ).show()
 }
 
@@ -371,8 +373,8 @@ fun timePicker(
         { _: TimePicker, hour: Int, minute: Int ->
             onTimeChange(hour, minute)
         },
-        recordDateTime.recordTime.hour,
-        recordDateTime.recordTime.hour,
+        recordDateTime.dateTime.hour,
+        recordDateTime.dateTime.minute,
         false
     ).show()
 }
