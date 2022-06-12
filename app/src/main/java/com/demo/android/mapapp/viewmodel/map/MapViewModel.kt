@@ -16,8 +16,7 @@ import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import java.time.LocalDate
-import java.time.LocalTime
+import java.time.LocalDateTime
 import javax.inject.Inject
 
 /**
@@ -30,10 +29,11 @@ data class DetailRecordState @RequiresApi(Build.VERSION_CODES.O) constructor(
     val categoryId: Long,
     val creatureNum: Int = 1,
     val detailMemo: String = "",
-    val recordedAt: RecordDateTime = RecordDateTime(LocalDate.now(), LocalTime.now()),
+    val recordedAt: RecordDateTime = RecordDateTime(LocalDateTime.now()),
     val tappedLocation: LatLng = LatLng(0.0, 0.0),
     val done: Boolean = false,
     val isNormalMap: Boolean = false,
+    val isEditMode: Boolean = false,
     val errorMessage: String = ""
 )
 
@@ -91,7 +91,7 @@ class MapViewModel @Inject constructor(
             creatureId = _state.value.creatureId,
             creatureNum = _state.value.creatureNum,
             detailMemo = _state.value.detailMemo,
-            recordedAt = _state.value.recordedAt.toString(),
+            recordedAt = _state.value.recordedAt,
             longitude = _state.value.tappedLocation.longitude,
             latitude = _state.value.tappedLocation.latitude
         )
@@ -120,13 +120,19 @@ class MapViewModel @Inject constructor(
         }
     }
 
-    fun updateAddRecordStateForEditCreature(creatureDetail: CreatureDetail) {
+    /**
+     * 過去記録したマーカーをタップして、stateを更新する。
+     * これにより過去の記録情報をボトムシートに表示する。
+     * @param creatureDetail 生き物詳細情報
+     */
+//    fun updateAddRecordStateForEditCreature(creatureDetail: CreatureDetail) {
 //        with(creatureDetail){
+//            val recordedAtString = recordedAt.d
 //            updateState { currentState().copy(creatureNum = creatureNum,
 //                detailMemo = detailMemo?:"",
 //                recordedAt = recordedAt) }
 //        }}
-    }
+//    }
 
     /**
      * 年月日の状態を更新する
@@ -136,12 +142,14 @@ class MapViewModel @Inject constructor(
      */
     fun updateRecordedAtDate(year: Int, month: Int, dayOfMonth: Int) {
         // stateのRecordDateTimeクラス内の、年月日(LocalDate)だけを更新
-        val changedDate = LocalDate.of(year, month, dayOfMonth)
+        val minute = currentState().recordedAt.dateTime.minute
+        val hour = currentState().recordedAt.dateTime.hour
+        val changedDateTime = LocalDateTime.of(year, month, dayOfMonth, hour, minute)
         updateState {
             currentState()
                 .copy(
                     recordedAt = _state.value.recordedAt
-                        .copy(recordDate = changedDate)
+                        .copy(dateTime = changedDateTime)
                 )
         }
     }
@@ -153,12 +161,15 @@ class MapViewModel @Inject constructor(
      */
     fun updateRecordedAtTime(hour: Int, minute: Int) {
         // stateのRecordDateTimeクラス内の、時・分(LocalTime)だけを更新
-        val changedTime = LocalTime.of(hour, minute)
+        val year = currentState().recordedAt.dateTime.year
+        val month = currentState().recordedAt.dateTime.monthValue
+        val dayOfMonth = currentState().recordedAt.dateTime.dayOfMonth
+        val changedDateTime = LocalDateTime.of(year, month, dayOfMonth, hour, minute)
         updateState {
             currentState()
                 .copy(
                     recordedAt = _state.value.recordedAt
-                        .copy(recordTime = changedTime)
+                        .copy(dateTime = changedDateTime)
                 )
         }
     }
