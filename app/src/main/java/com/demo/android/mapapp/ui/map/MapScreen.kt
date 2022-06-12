@@ -40,6 +40,7 @@ import com.google.accompanist.permissions.shouldShowRationale
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 /**
@@ -87,9 +88,11 @@ fun MapScreen(
         // 位置情報が許可されていなければ、理由説明/マップが使用できない旨表示→リクエストで権限リクエスト画面表示
         if (permissionState.status.isGranted) {
             MapView(
+                viewModel,
                 state,
                 creatureList.value,
                 bottomSheetScaffoldState,
+                coroutineScope,
                 currentLocation.value,
                 onMapLongClick = { position ->
                     // 地図ロングクリックでStateの緯度経度更新、ボトムシート開閉
@@ -140,15 +143,18 @@ fun MapScreen(
 
 /**
  * 地図
+ * 生き物詳細情報がViewModelのメソッド（既存記録表示用）に必要なため、引数として渡している
  */
 @SuppressLint("NewApi")
 @RequiresApi(Build.VERSION_CODES.N)
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun MapView(
+    viewModel: MapViewModel,
     state: DetailRecordState,
     creatureList: List<CreatureDetail>,
     bottomSheetScaffoldState: BottomSheetScaffoldState,
+    coroutineScope: CoroutineScope,
     locationDetail: LocationDetail?,
     onMapLongClick: (position: LatLng) -> Unit,
     onDateChange: (year: Int, month: Int, dayOfMonth: Int) -> Unit,
@@ -218,8 +224,20 @@ fun MapView(
                     // onClickでstateの生き物情報を、クリックしたマーカーの情報に変更。削除、更新可能となる
                     creatureList.forEach { creature ->
                         val position = LatLng(creature.latitude, creature.longitude)
-                        Marker(state = MarkerState(position = position), draggable = false)
-
+                        Marker(
+                            state = MarkerState(position = position),
+                            draggable = false,
+                            tag = creature,
+                            onClick = {
+                                viewModel.updateStateForEditCreature(creature)
+                                coroutineScope.launch {
+                                    bottomSheetScaffoldState.bottomSheetState.apply {
+                                        if (isCollapsed) expand() else collapse()
+                                    }
+                                }
+                                false
+                            }
+                        )
                     }
                 }
 

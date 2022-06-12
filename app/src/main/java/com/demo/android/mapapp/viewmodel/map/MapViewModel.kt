@@ -125,14 +125,18 @@ class MapViewModel @Inject constructor(
      * これにより過去の記録情報をボトムシートに表示する。
      * @param creatureDetail 生き物詳細情報
      */
-//    fun updateAddRecordStateForEditCreature(creatureDetail: CreatureDetail) {
-//        with(creatureDetail){
-//            val recordedAtString = recordedAt.d
-//            updateState { currentState().copy(creatureNum = creatureNum,
-//                detailMemo = detailMemo?:"",
-//                recordedAt = recordedAt) }
-//        }}
-//    }
+    fun updateStateForEditCreature(creatureDetail: CreatureDetail) {
+        with(creatureDetail) {
+            updateState {
+                currentState().copy(
+                    creatureNum = creatureNum,
+                    detailMemo = detailMemo ?: "",
+                    recordedAt = recordedAt
+                )
+            }
+        }
+    }
+
 
     /**
      * 年月日の状態を更新する
