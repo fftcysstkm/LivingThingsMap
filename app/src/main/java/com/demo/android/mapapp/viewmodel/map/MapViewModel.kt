@@ -176,6 +176,7 @@ class MapViewModel @Inject constructor(
      * @param position タップした位置情報
      */
     fun updateTappedLocation(position: LatLng) {
+        refreshState()
         updateState {
             currentState().copy(
                 location = position
