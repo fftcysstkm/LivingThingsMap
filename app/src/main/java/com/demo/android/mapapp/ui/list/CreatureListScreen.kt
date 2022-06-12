@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Card
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -52,7 +53,7 @@ fun CreaturesList(
     onClickList: (Long, String, Long) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    LazyColumn {
+    LazyColumn(modifier.padding(8.dp)) {
         items(list.value) { creature ->
             CreatureCard(
                 creatureName = creature.creatureName,
@@ -78,11 +79,16 @@ fun CreatureCard(
     Card(
         modifier
             .padding(4.dp)
-            .height(36.dp)
-            .fillMaxWidth(1f)
+            .height(48.dp)
+            .fillMaxWidth(1f),
+        elevation = 2.dp
     ) {
         Text(
-            text = creatureName, modifier.wrapContentSize(Alignment.CenterStart)
+            text = creatureName,
+            modifier
+                .wrapContentSize(Alignment.CenterStart)
+                .padding(start = 8.dp),
+            style = MaterialTheme.typography.body2
         )
     }
 }
