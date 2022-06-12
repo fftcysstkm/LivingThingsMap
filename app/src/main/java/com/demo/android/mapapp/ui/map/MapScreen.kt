@@ -100,7 +100,7 @@ fun MapScreen(
                     viewModel.updateTappedLocation(position)
                     coroutineScope.launch {
                         bottomSheetScaffoldState.bottomSheetState.apply {
-                            if (isCollapsed) expand() else collapse()
+                            if (isCollapsed) expand()
                         }
                     }
                 },
