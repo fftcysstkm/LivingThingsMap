@@ -1,6 +1,7 @@
 package com.demo.android.mapapp.ui.map
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Context
@@ -27,18 +28,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.demo.android.mapapp.R
 import com.demo.android.mapapp.model.creature.CreatureDetail
-import com.demo.android.mapapp.model.date.RecordDate
+import com.demo.android.mapapp.model.date.RecordDateTime
 import com.demo.android.mapapp.model.location.LocationDetail
 import com.demo.android.mapapp.ui.add.CreateTopBar
-import com.demo.android.mapapp.viewmodel.map.AddRecordState
+import com.demo.android.mapapp.viewmodel.map.DetailRecordState
 import com.demo.android.mapapp.viewmodel.map.MapViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 /**
@@ -46,7 +49,7 @@ import kotlinx.coroutines.launch
  * accompanistの使い方参考：
  * https://google.github.io/accompanist/permissions/
  */
-@RequiresApi(Build.VERSION_CODES.N)
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterialApi::class)
 @Composable
 fun MapScreen(
@@ -86,9 +89,11 @@ fun MapScreen(
         // 位置情報が許可されていなければ、理由説明/マップが使用できない旨表示→リクエストで権限リクエスト画面表示
         if (permissionState.status.isGranted) {
             MapView(
+                viewModel,
                 state,
                 creatureList.value,
                 bottomSheetScaffoldState,
+                coroutineScope,
                 currentLocation.value,
                 onMapLongClick = { position ->
                     // 地図ロングクリックでStateの緯度経度更新、ボトムシート開閉
@@ -109,8 +114,26 @@ fun MapScreen(
                 onIncrement = { viewModel.increaseCreatureNum() },
                 onValueChange = { memo -> viewModel.updateMemo(memo) },
                 onSaveRecord = {
-                    // 保存ボタンで位置情報記録、ボトムシートを閉じる todo ロングタップで出したマーカーを消す
+                    // 保存ボタンで位置情報記録、ボトムシートを閉じる
                     viewModel.addCreatureDetail()
+                    coroutineScope.launch {
+                        bottomSheetScaffoldState.bottomSheetState.apply {
+                            if (isCollapsed) expand() else collapse()
+                        }
+                    }
+                },
+                onUpdateRecord = {
+                    // 更新ボタンで詳細情報更新、ボトムシートを閉じる
+                    viewModel.updateCreatureDetail()
+                    coroutineScope.launch {
+                        bottomSheetScaffoldState.bottomSheetState.apply {
+                            if (isCollapsed) expand() else collapse()
+                        }
+                    }
+                },
+                onDeleteRecord = {
+                    // 更新ボタンで詳細情報更新、ボトムシートを閉じる
+                    viewModel.deleteCreatureDetail()
                     coroutineScope.launch {
                         bottomSheetScaffoldState.bottomSheetState.apply {
                             if (isCollapsed) expand() else collapse()
@@ -119,7 +142,10 @@ fun MapScreen(
                 }
             )
         } else {
-            Column(modifier = modifier.fillMaxSize()) {
+            Column(
+                modifier = modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
 
                 val textToShow = if (permissionState.status.shouldShowRationale) {
                     "Location access is important for this app. Please grant the permission."
@@ -139,14 +165,18 @@ fun MapScreen(
 
 /**
  * 地図
+ * 生き物詳細情報がViewModelのメソッド（既存記録表示用）に必要なため、引数として渡している
  */
+@SuppressLint("NewApi")
 @RequiresApi(Build.VERSION_CODES.N)
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun MapView(
-    state: AddRecordState,
+    viewModel: MapViewModel,
+    state: DetailRecordState,
     creatureList: List<CreatureDetail>,
     bottomSheetScaffoldState: BottomSheetScaffoldState,
+    coroutineScope: CoroutineScope,
     locationDetail: LocationDetail?,
     onMapLongClick: (position: LatLng) -> Unit,
     onDateChange: (year: Int, month: Int, dayOfMonth: Int) -> Unit,
@@ -155,6 +185,8 @@ fun MapView(
     onIncrement: () -> Unit,
     onValueChange: (String) -> Unit,
     onSaveRecord: () -> Unit,
+    onUpdateRecord: () -> Unit,
+    onDeleteRecord: () -> Unit,
     modifier: Modifier = Modifier
 ) {
 
@@ -190,7 +222,9 @@ fun MapView(
                     onTimeChange = onTimeChange,
                     onDecrement = onDecrement,
                     onIncrement = onIncrement,
-                    saveRecord = onSaveRecord
+                    onSaveRecord = onSaveRecord,
+                    onUpdateRecord = onUpdateRecord,
+                    onDeleteRecord = onDeleteRecord
                 )
             },
             drawerGesturesEnabled = true,
@@ -209,13 +243,27 @@ fun MapView(
                     }
                 ) {
 
-                    // タップした位置情報のマーカー
-                    Marker(state = MarkerState(state.tappedLocation), draggable = true)
+                    // 記録したい生き物のマーカーを表示（マップロングクリックで表示）
+                    Marker(state = MarkerState(state.location), draggable = true)
 
-                    // 記録済みのマーカーを表示
+                    // 記録済みのマーカーを表示。マーカークリックでボトムシート表示、記録済み情報を表示
+                    // onClickでstateの生き物情報を、クリックしたマーカーの情報に変更。削除、更新可能となる
                     creatureList.forEach { creature ->
                         val position = LatLng(creature.latitude, creature.longitude)
-                        Marker(state = MarkerState(position = position), draggable = false)
+                        Marker(
+                            state = MarkerState(position = position),
+                            draggable = false,
+                            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN),
+                            onClick = {
+                                viewModel.updateStateForEditCreature(creature)
+                                coroutineScope.launch {
+                                    bottomSheetScaffoldState.bottomSheetState.apply {
+                                        if (isCollapsed) expand() else collapse()
+                                    }
+                                }
+                                false
+                            }
+                        )
                     }
                 }
 
@@ -247,16 +295,19 @@ fun MapView(
 /**
  * ModalBottomSheetLayoutの中身
  */
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun BottomSheetContent(
-    state: AddRecordState,
+    state: DetailRecordState,
     modifier: Modifier = Modifier,
     onValueChange: (String) -> Unit,
     onDateChange: (year: Int, month: Int, dayOfMonth: Int) -> Unit,
     onTimeChange: (hour: Int, minute: Int) -> Unit,
-    onDecrement: () -> Unit = {},
-    onIncrement: () -> Unit = {},
-    saveRecord: () -> Unit = {}
+    onDecrement: () -> Unit,
+    onIncrement: () -> Unit,
+    onSaveRecord: () -> Unit,
+    onUpdateRecord: () -> Unit,
+    onDeleteRecord: () -> Unit
 ) {
     Column(
         modifier
@@ -270,7 +321,7 @@ fun BottomSheetContent(
 
         // 記録日
         CalendarText(
-            recordDate = state.recordedAt,
+            recordDateTime = state.recordedAt,
             onDateChange = onDateChange,
             onTimeChange = onTimeChange
         )
@@ -284,20 +335,20 @@ fun BottomSheetContent(
         Memo(inputText = state.detailMemo, onValueChange = onValueChange)
         Spacer(modifier = modifier.size(spacerSize))
 
-        // 保存ボタン
-        Button(
-            modifier = modifier
-                .fillMaxWidth(1f)
-                .height(56.dp), onClick = saveRecord
-        ) {
-            Text("保存")
-        }
+        // ボタン（新規マーカー登録時：保存ボタン、既存マーカークリック時：編集と削除ボタン）
+        SaveOrEditButton(
+            isEditMode = state.isUpdateMode,
+            saveRecord = onSaveRecord,
+            editRecord = onUpdateRecord,
+            deleteRecord = onDeleteRecord
+        )
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun CalendarText(
-    recordDate: RecordDate,
+    recordDateTime: RecordDateTime,
     onDateChange: (year: Int, month: Int, dayOfMonth: Int) -> Unit,
     onTimeChange: (hour: Int, minute: Int) -> Unit,
     modifier: Modifier = Modifier
@@ -313,18 +364,18 @@ fun CalendarText(
         )
         // 日付。タップでDatepicker立ち上げ
         Text(
-            recordDate.recordDateText(),
+            recordDateTime.dateString(),
             modifier
-                .clickable { datePicker(context, recordDate, onDateChange) },
+                .clickable { datePicker(context, recordDateTime, onDateChange) },
             fontSize = fontSize
         )
 
         // 時刻。タップでTimepicker立ち上げ
         Text(
-            recordDate.recordTimeText(),
+            recordDateTime.timeString(),
             modifier
                 .padding(start = 8.dp)
-                .clickable { timePicker(context, recordDate, onTimeChange) },
+                .clickable { timePicker(context, recordDateTime, onTimeChange) },
             fontSize = fontSize
         )
     }
@@ -333,19 +384,21 @@ fun CalendarText(
 /**
  * ボトムシート内の日付をタップして表示するDatePicker
  */
+@RequiresApi(Build.VERSION_CODES.O)
 fun datePicker(
     context: Context,
-    recordDate: RecordDate,
+    recordDateTime: RecordDateTime,
     onDateChange: (year: Int, month: Int, dayOfMonth: Int) -> Unit,
 ) {
+    // 月は-1することで現実の日付になる
     DatePickerDialog(
         context,
         { _: DatePicker, year: Int, month: Int, dayOfMonth: Int ->
             onDateChange(year, month, dayOfMonth)
         },
-        recordDate.year,
-        recordDate.month,
-        recordDate.dayOfMonth
+        recordDateTime.dateTime.year,
+        recordDateTime.dateTime.monthValue - 1,
+        recordDateTime.dateTime.dayOfMonth
     ).show()
 }
 
@@ -353,9 +406,10 @@ fun datePicker(
  * ボトムシート内の時刻をタップして表示するTimePicker
  * AM/PM表記
  */
+@RequiresApi(Build.VERSION_CODES.O)
 fun timePicker(
     context: Context,
-    recordDate: RecordDate,
+    recordDateTime: RecordDateTime,
     onTimeChange: (hour: Int, minute: Int) -> Unit
 ) {
     // AM/PM表記
@@ -363,7 +417,10 @@ fun timePicker(
         context,
         { _: TimePicker, hour: Int, minute: Int ->
             onTimeChange(hour, minute)
-        }, recordDate.hour, recordDate.minute, false
+        },
+        recordDateTime.dateTime.hour,
+        recordDateTime.dateTime.minute,
+        false
     ).show()
 }
 
@@ -449,12 +506,64 @@ fun Memo(
 }
 
 /**
+ * 生物の記録時のメモComposable
+ */
+@Composable
+fun SaveOrEditButton(
+    modifier: Modifier = Modifier,
+    isEditMode: Boolean,
+    saveRecord: () -> Unit,
+    editRecord: () -> Unit,
+    deleteRecord: () -> Unit
+) {
+    // 既存マーカークリック時：編集と削除ボタン
+    if (isEditMode) {
+        val height = 56.dp
+        Row(
+            modifier = modifier
+                .fillMaxWidth(1f), horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Button(
+                modifier = modifier
+                    .height(height)
+                    .weight(1f),
+                colors = ButtonDefaults.textButtonColors(
+                    backgroundColor = Color.Red,
+                    contentColor = Color.White
+                ),
+                onClick = deleteRecord
+            ) {
+                Text("削除")
+            }
+            Spacer(modifier = modifier.size(32.dp))
+            Button(
+                modifier = modifier
+                    .height(height)
+                    .weight(1f), onClick = editRecord
+            ) {
+                Text("更新")
+            }
+        }
+        return
+    }
+    // 新規マーカー登録時：保存ボタン
+    Button(
+        modifier = modifier
+            .fillMaxWidth(1f)
+            .height(56.dp), onClick = saveRecord
+    ) {
+        Text("保存")
+    }
+}
+
+/**
  * ボトムシートのプレビュー
  */
+@RequiresApi(Build.VERSION_CODES.O)
 @Preview
 @Composable
 fun PreviewBottomSheet(modifier: Modifier = Modifier) {
-    val state = AddRecordState(
+    val state = DetailRecordState(
         creatureId = 1,
         categoryId = 1,
         creatureName = "Test"
@@ -464,7 +573,9 @@ fun PreviewBottomSheet(modifier: Modifier = Modifier) {
     val onTimeChange: (hour: Int, minute: Int) -> Unit = { _, _ -> }
     val onDecrement: () -> Unit = {}
     val onIncrement: () -> Unit = {}
-    val saveRecord: () -> Unit = {}
+    val onSaveRecord: () -> Unit = {}
+    val onUpdateRecord: () -> Unit = {}
+    val onDeleteRecord: () -> Unit = {}
 
     BottomSheetContent(
         state,
@@ -474,7 +585,9 @@ fun PreviewBottomSheet(modifier: Modifier = Modifier) {
         onTimeChange,
         onDecrement,
         onIncrement,
-        saveRecord
+        onSaveRecord,
+        onUpdateRecord,
+        onDeleteRecord
     )
 }
 

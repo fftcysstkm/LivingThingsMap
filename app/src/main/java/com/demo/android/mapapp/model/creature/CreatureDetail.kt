@@ -2,6 +2,7 @@ package com.demo.android.mapapp.model.creature
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.demo.android.mapapp.model.date.RecordDateTime
 
 /**
  * 生き物詳細情報Entity(マップで記録、表示する生き物情報)
@@ -13,7 +14,7 @@ data class CreatureDetail(
     val creatureId: Long,
     val creatureNum: Int,
     val detailMemo: String?,
-    val recordedAt: String,
+    val recordedAt: RecordDateTime,
     val longitude: Double,
     val latitude: Double
 )

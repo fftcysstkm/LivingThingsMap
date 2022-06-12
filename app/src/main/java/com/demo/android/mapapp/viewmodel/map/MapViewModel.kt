@@ -1,34 +1,39 @@
 package com.demo.android.mapapp.viewmodel.map
 
+import android.annotation.SuppressLint
 import android.app.Application
-import android.util.Log
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.demo.android.mapapp.model.creature.CreatureDetail
-import com.demo.android.mapapp.model.date.RecordDate
+import com.demo.android.mapapp.model.date.RecordDateTime
 import com.demo.android.mapapp.model.location.LocationLiveData
 import com.demo.android.mapapp.repository.creature.CreatureRepository
 import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import java.util.*
+import java.time.LocalDateTime
 import javax.inject.Inject
 
 /**
  * BottomSheetScaffoldに表示する状態を表すクラス
  */
-data class AddRecordState(
+@SuppressLint("NewApi")
+data class DetailRecordState @RequiresApi(Build.VERSION_CODES.O) constructor(
+    val creatureDetailId: Long = 0,
     val creatureId: Long,
     val creatureName: String,
     val categoryId: Long,
     val creatureNum: Int = 1,
     val detailMemo: String = "",
-    val recordedAt: RecordDate = RecordDate(Calendar.getInstance()),
-    val tappedLocation: LatLng = LatLng(0.0, 0.0),
+    val recordedAt: RecordDateTime = RecordDateTime(LocalDateTime.now()),
+    val location: LatLng = LatLng(0.0, 0.0),
     val done: Boolean = false,
     val isNormalMap: Boolean = false,
+    val isUpdateMode: Boolean = false,
     val errorMessage: String = ""
 )
 
@@ -39,6 +44,7 @@ data class AddRecordState(
  * https://johnoreilly.dev/posts/jetpack-compose-google-maps-part2/
  */
 @HiltViewModel
+@RequiresApi(Build.VERSION_CODES.O)
 class MapViewModel @Inject constructor(
     private val repository: CreatureRepository,
     application: Application,
@@ -58,7 +64,7 @@ class MapViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     private val _state = MutableStateFlow(
-        AddRecordState(
+        DetailRecordState(
             creatureId = creatureId,
             creatureName = creatureName,
             categoryId = categoryId,
@@ -67,8 +73,16 @@ class MapViewModel @Inject constructor(
     val state = _state.asStateFlow()
 
     private fun currentState() = _state.value
-    private fun updateState(newState: () -> AddRecordState) {
+    private fun updateState(newState: () -> DetailRecordState) {
         _state.value = newState()
+    }
+
+    private fun refreshState() {
+        _state.value = DetailRecordState(
+            creatureId = creatureId,
+            creatureName = creatureName,
+            categoryId = categoryId
+        )
     }
 
     fun getLocationLiveData() = locationLiveData
@@ -85,17 +99,64 @@ class MapViewModel @Inject constructor(
             creatureId = _state.value.creatureId,
             creatureNum = _state.value.creatureNum,
             detailMemo = _state.value.detailMemo,
-            recordedAt = _state.value.recordedAt.toString(),
-            longitude = _state.value.tappedLocation.longitude,
-            latitude = _state.value.tappedLocation.latitude
+            recordedAt = _state.value.recordedAt,
+            longitude = _state.value.location.longitude,
+            latitude = _state.value.location.latitude
         )
 
         // 生き物詳細を保存
         viewModelScope.launch {
             try {
+                // 保存完了後、マーカーが残るので詳細情報を初期化する
                 repository.addCreatureDetail(creatureDetail)
-                updateState { currentState().copy(done = true) }
-                Log.d("creatureDetail", "insert success")
+                refreshState()
+            } catch (e: Exception) {
+                updateState { currentState().copy(errorMessage = e.message ?: "") }
+            }
+        }
+    }
+
+    /**
+     * 生き物詳細情報を更新する（記録済みマーカータップ、更新ボタン押下）
+     */
+    fun updateCreatureDetail() {
+        val creatureDetail = CreatureDetail(
+            creatureDetailId = _state.value.creatureDetailId,
+            creatureId = _state.value.creatureId,
+            creatureNum = _state.value.creatureNum,
+            detailMemo = _state.value.detailMemo,
+            recordedAt = _state.value.recordedAt,
+            longitude = _state.value.location.longitude,
+            latitude = _state.value.location.latitude
+        )
+        // 生き物詳細情報更新処理
+        viewModelScope.launch {
+            try {
+                repository.updateCreatureDetail(creatureDetail)
+                // 更新完了後、マーカーが残るので詳細情報を初期化する
+                refreshState()
+            } catch (e: Exception) {
+                updateState { currentState().copy(errorMessage = e.message ?: "") }
+            }
+        }
+    }
+
+    fun deleteCreatureDetail() {
+        val creatureDetail = CreatureDetail(
+            creatureDetailId = _state.value.creatureDetailId,
+            creatureId = _state.value.creatureId,
+            creatureNum = _state.value.creatureNum,
+            detailMemo = _state.value.detailMemo,
+            recordedAt = _state.value.recordedAt,
+            longitude = _state.value.location.longitude,
+            latitude = _state.value.location.latitude
+        )
+        // 生き物詳細情報削除処理
+        viewModelScope.launch {
+            try {
+                // 削除完了後、マーカーが残るので詳細情報を初期化する
+                repository.deleteCreatureDetail(creatureDetail)
+                refreshState()
             } catch (e: Exception) {
                 updateState { currentState().copy(errorMessage = e.message ?: "") }
             }
@@ -109,8 +170,29 @@ class MapViewModel @Inject constructor(
     fun updateTappedLocation(position: LatLng) {
         updateState {
             currentState().copy(
-                tappedLocation = position
+                location = position
             )
+        }
+    }
+
+    /**
+     * 過去記録したマーカーをタップして、stateを更新する。
+     * これにより過去の記録情報をボトムシートに表示する。
+     * @param creatureDetail 生き物詳細情報
+     */
+    fun updateStateForEditCreature(creatureDetail: CreatureDetail) {
+        with(creatureDetail) {
+            updateState {
+                // 更新モードをtrueにする→ボトムシートのボタンが削除、更新になる
+                currentState().copy(
+                    creatureDetailId = creatureDetailId,
+                    creatureNum = creatureNum,
+                    detailMemo = detailMemo ?: "",
+                    recordedAt = recordedAt,
+                    location = LatLng(latitude, longitude),
+                    isUpdateMode = true,
+                )
+            }
         }
     }
 
@@ -121,10 +203,17 @@ class MapViewModel @Inject constructor(
      * @param dayOfMonth 日
      */
     fun updateRecordedAtDate(year: Int, month: Int, dayOfMonth: Int) {
-        // stateのRecordDateクラスのCalendar取得、年月日を更新
-        val calendar = currentState().recordedAt.calendar
-        calendar.set(year, month, dayOfMonth)
-        updateState { currentState().copy(recordedAt = RecordDate(calendar)) }
+        // stateのRecordDateTimeクラス内の、年月日(LocalDate)だけを更新
+        val minute = currentState().recordedAt.dateTime.minute
+        val hour = currentState().recordedAt.dateTime.hour
+        val changedDateTime = LocalDateTime.of(year, month, dayOfMonth, hour, minute)
+        updateState {
+            currentState()
+                .copy(
+                    recordedAt = _state.value.recordedAt
+                        .copy(dateTime = changedDateTime)
+                )
+        }
     }
 
     /**
@@ -133,11 +222,18 @@ class MapViewModel @Inject constructor(
      * @param minute 月
      */
     fun updateRecordedAtTime(hour: Int, minute: Int) {
-        // stateのRecordDateクラスのCalendar取得、時分を更新
-        val calendar = currentState().recordedAt.calendar
-        calendar.set(Calendar.HOUR, hour)
-        calendar.set(Calendar.MINUTE, minute)
-        updateState { currentState().copy(recordedAt = RecordDate(calendar)) }
+        // stateのRecordDateTimeクラス内の、時・分(LocalTime)だけを更新
+        val year = currentState().recordedAt.dateTime.year
+        val month = currentState().recordedAt.dateTime.monthValue
+        val dayOfMonth = currentState().recordedAt.dateTime.dayOfMonth
+        val changedDateTime = LocalDateTime.of(year, month, dayOfMonth, hour, minute)
+        updateState {
+            currentState()
+                .copy(
+                    recordedAt = _state.value.recordedAt
+                        .copy(dateTime = changedDateTime)
+                )
+        }
     }
 
     /**
