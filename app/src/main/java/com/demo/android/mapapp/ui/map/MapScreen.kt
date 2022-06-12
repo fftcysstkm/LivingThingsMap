@@ -113,7 +113,7 @@ fun MapScreen(
                 onIncrement = { viewModel.increaseCreatureNum() },
                 onValueChange = { memo -> viewModel.updateMemo(memo) },
                 onSaveRecord = {
-                    // 保存ボタンで位置情報記録、ボトムシートを閉じる todo ロングタップで出したマーカーを消す
+                    // 保存ボタンで位置情報記録、ボトムシートを閉じる
                     viewModel.addCreatureDetail()
                     coroutineScope.launch {
                         bottomSheetScaffoldState.bottomSheetState.apply {
@@ -123,7 +123,10 @@ fun MapScreen(
                 }
             )
         } else {
-            Column(modifier = modifier.fillMaxSize()) {
+            Column(
+                modifier = modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
 
                 val textToShow = if (permissionState.status.shouldShowRationale) {
                     "Location access is important for this app. Please grant the permission."
@@ -307,14 +310,12 @@ fun BottomSheetContent(
         Memo(inputText = state.detailMemo, onValueChange = onValueChange)
         Spacer(modifier = modifier.size(spacerSize))
 
-        // 保存ボタン
-        Button(
-            modifier = modifier
-                .fillMaxWidth(1f)
-                .height(56.dp), onClick = saveRecord
-        ) {
-            Text("保存")
-        }
+        // ボタン（新規マーカー登録時：保存ボタン、既存マーカークリック時：編集と削除ボタン）
+        SaveOrEditButton(
+            isEditMode = state.isEditMode,
+            saveRecord = {},
+            editRecord = {},
+            deleteRecord = {})
     }
 }
 
@@ -475,6 +476,57 @@ fun Memo(
             modifier = modifier
                 .fillMaxWidth(1f)
         )
+    }
+}
+
+/**
+ * 生物の記録時のメモComposable
+ */
+@Composable
+fun SaveOrEditButton(
+    modifier: Modifier = Modifier,
+    isEditMode: Boolean,
+    saveRecord: () -> Unit,
+    editRecord: () -> Unit,
+    deleteRecord: () -> Unit
+) {
+    // 既存マーカークリック時：編集と削除ボタン
+    if (isEditMode) {
+        val height = 56.dp
+        Row(
+            modifier = modifier
+                .fillMaxWidth(1f), horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Button(
+                modifier = modifier
+                    .height(height)
+                    .weight(1f),
+                colors = ButtonDefaults.textButtonColors(
+                    backgroundColor = Color.Red,
+                    contentColor = Color.White
+                ),
+                onClick = editRecord
+            ) {
+                Text("削除")
+            }
+            Spacer(modifier = modifier.size(32.dp))
+            Button(
+                modifier = modifier
+                    .height(height)
+                    .weight(1f), onClick = deleteRecord
+            ) {
+                Text("更新")
+            }
+        }
+        return
+    }
+    // 新規マーカー登録時：保存ボタン
+    Button(
+        modifier = modifier
+            .fillMaxWidth(1f)
+            .height(56.dp), onClick = saveRecord
+    ) {
+        Text("保存")
     }
 }
 
