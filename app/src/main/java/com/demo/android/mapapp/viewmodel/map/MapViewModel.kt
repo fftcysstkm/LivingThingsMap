@@ -3,7 +3,6 @@ package com.demo.android.mapapp.viewmodel.map
 import android.annotation.SuppressLint
 import android.app.Application
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
@@ -24,16 +23,17 @@ import javax.inject.Inject
  */
 @SuppressLint("NewApi")
 data class DetailRecordState @RequiresApi(Build.VERSION_CODES.O) constructor(
+    val creatureDetailId: Long = 0,
     val creatureId: Long,
     val creatureName: String,
     val categoryId: Long,
     val creatureNum: Int = 1,
     val detailMemo: String = "",
     val recordedAt: RecordDateTime = RecordDateTime(LocalDateTime.now()),
-    val tappedLocation: LatLng = LatLng(0.0, 0.0),
+    val location: LatLng = LatLng(0.0, 0.0),
     val done: Boolean = false,
     val isNormalMap: Boolean = false,
-    val isEditMode: Boolean = false,
+    val isUpdateMode: Boolean = false,
     val errorMessage: String = ""
 )
 
@@ -77,6 +77,14 @@ class MapViewModel @Inject constructor(
         _state.value = newState()
     }
 
+    private fun refreshState() {
+        _state.value = DetailRecordState(
+            creatureId = creatureId,
+            creatureName = creatureName,
+            categoryId = categoryId
+        )
+    }
+
     fun getLocationLiveData() = locationLiveData
     fun startLocation() {
         locationLiveData.startLocationUpdates()
@@ -92,16 +100,63 @@ class MapViewModel @Inject constructor(
             creatureNum = _state.value.creatureNum,
             detailMemo = _state.value.detailMemo,
             recordedAt = _state.value.recordedAt,
-            longitude = _state.value.tappedLocation.longitude,
-            latitude = _state.value.tappedLocation.latitude
+            longitude = _state.value.location.longitude,
+            latitude = _state.value.location.latitude
         )
 
         // 生き物詳細を保存
         viewModelScope.launch {
             try {
+                // 保存完了後、マーカーが残るので詳細情報を初期化する
                 repository.addCreatureDetail(creatureDetail)
-                updateState { currentState().copy(done = true) }
-                Log.d("creatureDetail", "insert success")
+                refreshState()
+            } catch (e: Exception) {
+                updateState { currentState().copy(errorMessage = e.message ?: "") }
+            }
+        }
+    }
+
+    /**
+     * 生き物詳細情報を更新する（記録済みマーカータップ、更新ボタン押下）
+     */
+    fun updateCreatureDetail() {
+        val creatureDetail = CreatureDetail(
+            creatureDetailId = _state.value.creatureDetailId,
+            creatureId = _state.value.creatureId,
+            creatureNum = _state.value.creatureNum,
+            detailMemo = _state.value.detailMemo,
+            recordedAt = _state.value.recordedAt,
+            longitude = _state.value.location.longitude,
+            latitude = _state.value.location.latitude
+        )
+        // 生き物詳細情報更新処理
+        viewModelScope.launch {
+            try {
+                repository.updateCreatureDetail(creatureDetail)
+                // 更新完了後、マーカーが残るので詳細情報を初期化する
+                refreshState()
+            } catch (e: Exception) {
+                updateState { currentState().copy(errorMessage = e.message ?: "") }
+            }
+        }
+    }
+
+    fun deleteCreatureDetail() {
+        val creatureDetail = CreatureDetail(
+            creatureDetailId = _state.value.creatureDetailId,
+            creatureId = _state.value.creatureId,
+            creatureNum = _state.value.creatureNum,
+            detailMemo = _state.value.detailMemo,
+            recordedAt = _state.value.recordedAt,
+            longitude = _state.value.location.longitude,
+            latitude = _state.value.location.latitude
+        )
+        // 生き物詳細情報削除処理
+        viewModelScope.launch {
+            try {
+                // 削除完了後、マーカーが残るので詳細情報を初期化する
+                repository.deleteCreatureDetail(creatureDetail)
+                refreshState()
             } catch (e: Exception) {
                 updateState { currentState().copy(errorMessage = e.message ?: "") }
             }
@@ -115,7 +170,7 @@ class MapViewModel @Inject constructor(
     fun updateTappedLocation(position: LatLng) {
         updateState {
             currentState().copy(
-                tappedLocation = position
+                location = position
             )
         }
     }
@@ -128,15 +183,18 @@ class MapViewModel @Inject constructor(
     fun updateStateForEditCreature(creatureDetail: CreatureDetail) {
         with(creatureDetail) {
             updateState {
+                // 更新モードをtrueにする→ボトムシートのボタンが削除、更新になる
                 currentState().copy(
+                    creatureDetailId = creatureDetailId,
                     creatureNum = creatureNum,
                     detailMemo = detailMemo ?: "",
-                    recordedAt = recordedAt
+                    recordedAt = recordedAt,
+                    location = LatLng(latitude, longitude),
+                    isUpdateMode = true,
                 )
             }
         }
     }
-
 
     /**
      * 年月日の状態を更新する

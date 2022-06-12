@@ -1,9 +1,6 @@
 package com.demo.android.mapapp.model.creature
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.Query
-import androidx.room.RoomWarnings
+import androidx.room.*
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -57,5 +54,18 @@ interface CreatureDao {
     )
     fun getCreatureDetails(creatureId: Long): Flow<List<CreatureDetail>>
 
+    /**
+     * 生き物の詳細情報を更新する
+     * @param creatureDetail 生き物詳細インスタンス
+     */
+    @Update
+    suspend fun updateCreatureDetail(creatureDetail: CreatureDetail): Int
+
+    /**
+     * 生き物の詳細情報を削除する
+     * @param creatureDetail 生き物詳細インスタンス
+     */
+    @Delete
+    suspend fun deleteCreatureDetail(creatureDetail: CreatureDetail): Int
 
 }

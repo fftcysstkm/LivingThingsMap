@@ -37,6 +37,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
@@ -120,6 +121,24 @@ fun MapScreen(
                             if (isCollapsed) expand() else collapse()
                         }
                     }
+                },
+                onUpdateRecord = {
+                    // 更新ボタンで詳細情報更新、ボトムシートを閉じる
+                    viewModel.updateCreatureDetail()
+                    coroutineScope.launch {
+                        bottomSheetScaffoldState.bottomSheetState.apply {
+                            if (isCollapsed) expand() else collapse()
+                        }
+                    }
+                },
+                onDeleteRecord = {
+                    // 更新ボタンで詳細情報更新、ボトムシートを閉じる
+                    viewModel.deleteCreatureDetail()
+                    coroutineScope.launch {
+                        bottomSheetScaffoldState.bottomSheetState.apply {
+                            if (isCollapsed) expand() else collapse()
+                        }
+                    }
                 }
             )
         } else {
@@ -166,6 +185,8 @@ fun MapView(
     onIncrement: () -> Unit,
     onValueChange: (String) -> Unit,
     onSaveRecord: () -> Unit,
+    onUpdateRecord: () -> Unit,
+    onDeleteRecord: () -> Unit,
     modifier: Modifier = Modifier
 ) {
 
@@ -201,7 +222,9 @@ fun MapView(
                     onTimeChange = onTimeChange,
                     onDecrement = onDecrement,
                     onIncrement = onIncrement,
-                    saveRecord = onSaveRecord
+                    onSaveRecord = onSaveRecord,
+                    onUpdateRecord = onUpdateRecord,
+                    onDeleteRecord = onDeleteRecord
                 )
             },
             drawerGesturesEnabled = true,
@@ -221,7 +244,7 @@ fun MapView(
                 ) {
 
                     // 記録したい生き物のマーカーを表示（マップロングクリックで表示）
-                    Marker(state = MarkerState(state.tappedLocation), draggable = true)
+                    Marker(state = MarkerState(state.location), draggable = true)
 
                     // 記録済みのマーカーを表示。マーカークリックでボトムシート表示、記録済み情報を表示
                     // onClickでstateの生き物情報を、クリックしたマーカーの情報に変更。削除、更新可能となる
@@ -230,7 +253,7 @@ fun MapView(
                         Marker(
                             state = MarkerState(position = position),
                             draggable = false,
-                            tag = creature,
+                            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN),
                             onClick = {
                                 viewModel.updateStateForEditCreature(creature)
                                 coroutineScope.launch {
@@ -280,9 +303,11 @@ fun BottomSheetContent(
     onValueChange: (String) -> Unit,
     onDateChange: (year: Int, month: Int, dayOfMonth: Int) -> Unit,
     onTimeChange: (hour: Int, minute: Int) -> Unit,
-    onDecrement: () -> Unit = {},
-    onIncrement: () -> Unit = {},
-    saveRecord: () -> Unit = {}
+    onDecrement: () -> Unit,
+    onIncrement: () -> Unit,
+    onSaveRecord: () -> Unit,
+    onUpdateRecord: () -> Unit,
+    onDeleteRecord: () -> Unit
 ) {
     Column(
         modifier
@@ -312,10 +337,11 @@ fun BottomSheetContent(
 
         // ボタン（新規マーカー登録時：保存ボタン、既存マーカークリック時：編集と削除ボタン）
         SaveOrEditButton(
-            isEditMode = state.isEditMode,
-            saveRecord = {},
-            editRecord = {},
-            deleteRecord = {})
+            isEditMode = state.isUpdateMode,
+            saveRecord = onSaveRecord,
+            editRecord = onUpdateRecord,
+            deleteRecord = onDeleteRecord
+        )
     }
 }
 
@@ -505,7 +531,7 @@ fun SaveOrEditButton(
                     backgroundColor = Color.Red,
                     contentColor = Color.White
                 ),
-                onClick = editRecord
+                onClick = deleteRecord
             ) {
                 Text("削除")
             }
@@ -513,7 +539,7 @@ fun SaveOrEditButton(
             Button(
                 modifier = modifier
                     .height(height)
-                    .weight(1f), onClick = deleteRecord
+                    .weight(1f), onClick = editRecord
             ) {
                 Text("更新")
             }
@@ -547,7 +573,9 @@ fun PreviewBottomSheet(modifier: Modifier = Modifier) {
     val onTimeChange: (hour: Int, minute: Int) -> Unit = { _, _ -> }
     val onDecrement: () -> Unit = {}
     val onIncrement: () -> Unit = {}
-    val saveRecord: () -> Unit = {}
+    val onSaveRecord: () -> Unit = {}
+    val onUpdateRecord: () -> Unit = {}
+    val onDeleteRecord: () -> Unit = {}
 
     BottomSheetContent(
         state,
@@ -557,7 +585,9 @@ fun PreviewBottomSheet(modifier: Modifier = Modifier) {
         onTimeChange,
         onDecrement,
         onIncrement,
-        saveRecord
+        onSaveRecord,
+        onUpdateRecord,
+        onDeleteRecord
     )
 }
 
