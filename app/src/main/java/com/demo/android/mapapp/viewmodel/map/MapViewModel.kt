@@ -1,31 +1,36 @@
 package com.demo.android.mapapp.viewmodel.map
 
+import android.annotation.SuppressLint
 import android.app.Application
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.demo.android.mapapp.model.creature.CreatureDetail
-import com.demo.android.mapapp.model.date.RecordDate
+import com.demo.android.mapapp.model.date.RecordDateTime
 import com.demo.android.mapapp.model.location.LocationLiveData
 import com.demo.android.mapapp.repository.creature.CreatureRepository
 import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import java.util.*
+import java.time.LocalDate
+import java.time.LocalTime
 import javax.inject.Inject
 
 /**
  * BottomSheetScaffoldに表示する状態を表すクラス
  */
-data class AddRecordState(
+@SuppressLint("NewApi")
+data class DetailRecordState @RequiresApi(Build.VERSION_CODES.O) constructor(
     val creatureId: Long,
     val creatureName: String,
     val categoryId: Long,
     val creatureNum: Int = 1,
     val detailMemo: String = "",
-    val recordedAt: RecordDate = RecordDate(Calendar.getInstance()),
+    val recordedAt: RecordDateTime = RecordDateTime(LocalDate.now(), LocalTime.now()),
     val tappedLocation: LatLng = LatLng(0.0, 0.0),
     val done: Boolean = false,
     val isNormalMap: Boolean = false,
@@ -39,6 +44,7 @@ data class AddRecordState(
  * https://johnoreilly.dev/posts/jetpack-compose-google-maps-part2/
  */
 @HiltViewModel
+@RequiresApi(Build.VERSION_CODES.O)
 class MapViewModel @Inject constructor(
     private val repository: CreatureRepository,
     application: Application,
@@ -58,7 +64,7 @@ class MapViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     private val _state = MutableStateFlow(
-        AddRecordState(
+        DetailRecordState(
             creatureId = creatureId,
             creatureName = creatureName,
             categoryId = categoryId,
@@ -67,7 +73,7 @@ class MapViewModel @Inject constructor(
     val state = _state.asStateFlow()
 
     private fun currentState() = _state.value
-    private fun updateState(newState: () -> AddRecordState) {
+    private fun updateState(newState: () -> DetailRecordState) {
         _state.value = newState()
     }
 
@@ -114,6 +120,14 @@ class MapViewModel @Inject constructor(
         }
     }
 
+    fun updateAddRecordStateForEditCreature(creatureDetail: CreatureDetail) {
+//        with(creatureDetail){
+//            updateState { currentState().copy(creatureNum = creatureNum,
+//                detailMemo = detailMemo?:"",
+//                recordedAt = recordedAt) }
+//        }}
+    }
+
     /**
      * 年月日の状態を更新する
      * @param year 年
@@ -121,10 +135,15 @@ class MapViewModel @Inject constructor(
      * @param dayOfMonth 日
      */
     fun updateRecordedAtDate(year: Int, month: Int, dayOfMonth: Int) {
-        // stateのRecordDateクラスのCalendar取得、年月日を更新
-        val calendar = currentState().recordedAt.calendar
-        calendar.set(year, month, dayOfMonth)
-        updateState { currentState().copy(recordedAt = RecordDate(calendar)) }
+        // stateのRecordDateTimeクラス内の、年月日(LocalDate)だけを更新
+        val changedDate = LocalDate.of(year, month, dayOfMonth)
+        updateState {
+            currentState()
+                .copy(
+                    recordedAt = _state.value.recordedAt
+                        .copy(recordDate = changedDate)
+                )
+        }
     }
 
     /**
@@ -133,11 +152,15 @@ class MapViewModel @Inject constructor(
      * @param minute 月
      */
     fun updateRecordedAtTime(hour: Int, minute: Int) {
-        // stateのRecordDateクラスのCalendar取得、時分を更新
-        val calendar = currentState().recordedAt.calendar
-        calendar.set(Calendar.HOUR, hour)
-        calendar.set(Calendar.MINUTE, minute)
-        updateState { currentState().copy(recordedAt = RecordDate(calendar)) }
+        // stateのRecordDateTimeクラス内の、時・分(LocalTime)だけを更新
+        val changedTime = LocalTime.of(hour, minute)
+        updateState {
+            currentState()
+                .copy(
+                    recordedAt = _state.value.recordedAt
+                        .copy(recordTime = changedTime)
+                )
+        }
     }
 
     /**
