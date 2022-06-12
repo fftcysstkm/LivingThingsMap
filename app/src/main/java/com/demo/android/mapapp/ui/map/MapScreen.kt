@@ -1,6 +1,7 @@
 package com.demo.android.mapapp.ui.map
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Context
@@ -27,10 +28,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.demo.android.mapapp.R
 import com.demo.android.mapapp.model.creature.CreatureDetail
-import com.demo.android.mapapp.model.date.RecordDate
+import com.demo.android.mapapp.model.date.RecordDateTime
 import com.demo.android.mapapp.model.location.LocationDetail
 import com.demo.android.mapapp.ui.add.CreateTopBar
-import com.demo.android.mapapp.viewmodel.map.AddRecordState
+import com.demo.android.mapapp.viewmodel.map.DetailRecordState
 import com.demo.android.mapapp.viewmodel.map.MapViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
@@ -46,7 +47,7 @@ import kotlinx.coroutines.launch
  * accompanistの使い方参考：
  * https://google.github.io/accompanist/permissions/
  */
-@RequiresApi(Build.VERSION_CODES.N)
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterialApi::class)
 @Composable
 fun MapScreen(
@@ -140,11 +141,12 @@ fun MapScreen(
 /**
  * 地図
  */
+@SuppressLint("NewApi")
 @RequiresApi(Build.VERSION_CODES.N)
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun MapView(
-    state: AddRecordState,
+    state: DetailRecordState,
     creatureList: List<CreatureDetail>,
     bottomSheetScaffoldState: BottomSheetScaffoldState,
     locationDetail: LocationDetail?,
@@ -209,13 +211,14 @@ fun MapView(
                     }
                 ) {
 
-                    // タップした位置情報のマーカー
+                    // マップロングクリックした位置情報のマーカー
                     Marker(state = MarkerState(state.tappedLocation), draggable = true)
 
-                    // 記録済みのマーカーを表示
+                    // 記録済みのマーカーを表示。クリックでボトムシート表示、記録済み情報を表示
                     creatureList.forEach { creature ->
                         val position = LatLng(creature.latitude, creature.longitude)
                         Marker(state = MarkerState(position = position), draggable = false)
+
                     }
                 }
 
@@ -247,9 +250,10 @@ fun MapView(
 /**
  * ModalBottomSheetLayoutの中身
  */
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun BottomSheetContent(
-    state: AddRecordState,
+    state: DetailRecordState,
     modifier: Modifier = Modifier,
     onValueChange: (String) -> Unit,
     onDateChange: (year: Int, month: Int, dayOfMonth: Int) -> Unit,
@@ -270,7 +274,7 @@ fun BottomSheetContent(
 
         // 記録日
         CalendarText(
-            recordDate = state.recordedAt,
+            recordDateTime = state.recordedAt,
             onDateChange = onDateChange,
             onTimeChange = onTimeChange
         )
@@ -295,9 +299,10 @@ fun BottomSheetContent(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun CalendarText(
-    recordDate: RecordDate,
+    recordDateTime: RecordDateTime,
     onDateChange: (year: Int, month: Int, dayOfMonth: Int) -> Unit,
     onTimeChange: (hour: Int, minute: Int) -> Unit,
     modifier: Modifier = Modifier
@@ -313,18 +318,18 @@ fun CalendarText(
         )
         // 日付。タップでDatepicker立ち上げ
         Text(
-            recordDate.recordDateText(),
+            recordDateTime.dateString(),
             modifier
-                .clickable { datePicker(context, recordDate, onDateChange) },
+                .clickable { datePicker(context, recordDateTime, onDateChange) },
             fontSize = fontSize
         )
 
         // 時刻。タップでTimepicker立ち上げ
         Text(
-            recordDate.recordTimeText(),
+            recordDateTime.timeString(),
             modifier
                 .padding(start = 8.dp)
-                .clickable { timePicker(context, recordDate, onTimeChange) },
+                .clickable { timePicker(context, recordDateTime, onTimeChange) },
             fontSize = fontSize
         )
     }
@@ -333,9 +338,10 @@ fun CalendarText(
 /**
  * ボトムシート内の日付をタップして表示するDatePicker
  */
+@RequiresApi(Build.VERSION_CODES.O)
 fun datePicker(
     context: Context,
-    recordDate: RecordDate,
+    recordDateTime: RecordDateTime,
     onDateChange: (year: Int, month: Int, dayOfMonth: Int) -> Unit,
 ) {
     DatePickerDialog(
@@ -343,9 +349,9 @@ fun datePicker(
         { _: DatePicker, year: Int, month: Int, dayOfMonth: Int ->
             onDateChange(year, month, dayOfMonth)
         },
-        recordDate.year,
-        recordDate.month,
-        recordDate.dayOfMonth
+        recordDateTime.recordDate.year,
+        recordDateTime.recordDate.monthValue,
+        recordDateTime.recordDate.dayOfMonth
     ).show()
 }
 
@@ -353,9 +359,10 @@ fun datePicker(
  * ボトムシート内の時刻をタップして表示するTimePicker
  * AM/PM表記
  */
+@RequiresApi(Build.VERSION_CODES.O)
 fun timePicker(
     context: Context,
-    recordDate: RecordDate,
+    recordDateTime: RecordDateTime,
     onTimeChange: (hour: Int, minute: Int) -> Unit
 ) {
     // AM/PM表記
@@ -363,7 +370,10 @@ fun timePicker(
         context,
         { _: TimePicker, hour: Int, minute: Int ->
             onTimeChange(hour, minute)
-        }, recordDate.hour, recordDate.minute, false
+        },
+        recordDateTime.recordTime.hour,
+        recordDateTime.recordTime.hour,
+        false
     ).show()
 }
 
@@ -451,10 +461,11 @@ fun Memo(
 /**
  * ボトムシートのプレビュー
  */
+@RequiresApi(Build.VERSION_CODES.O)
 @Preview
 @Composable
 fun PreviewBottomSheet(modifier: Modifier = Modifier) {
-    val state = AddRecordState(
+    val state = DetailRecordState(
         creatureId = 1,
         categoryId = 1,
         creatureName = "Test"
