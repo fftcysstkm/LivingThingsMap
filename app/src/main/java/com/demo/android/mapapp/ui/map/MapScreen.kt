@@ -74,9 +74,6 @@ fun MapScreen(
     // 位置情報が許可されたかを監視(ACCESS_FINE_LOCATIONが許可されればACCESS_COARSE_LOCATIONも許可される)
     val permissionState = rememberPermissionState(Manifest.permission.ACCESS_FINE_LOCATION)
 
-    // マップのUIセッティング（現在地ボタン有効化）
-    val uiSettings by remember { mutableStateOf(MapUiSettings(myLocationButtonEnabled = true)) }
-
     // ボトムシートの状態、開閉操作に必要なcoroutineScope
     val bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
     val coroutineScope = rememberCoroutineScope()
@@ -93,7 +90,6 @@ fun MapScreen(
         if (permissionState.status.isGranted) {
             MapView(
                 viewModel,
-                uiSettings,
                 state,
                 creatureList.value,
                 bottomSheetScaffoldState,
@@ -178,7 +174,6 @@ fun MapScreen(
 @Composable
 fun MapView(
     viewModel: MapViewModel,
-    uiSettings: MapUiSettings,
     state: DetailRecordState,
     creatureList: List<CreatureDetail>,
     bottomSheetScaffoldState: BottomSheetScaffoldState,
@@ -195,6 +190,17 @@ fun MapView(
     onDeleteRecord: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // 現在地ボタン有効化
+    val uiSettings by remember { mutableStateOf(MapUiSettings(myLocationButtonEnabled = true)) }
+    // 現在地情報表示有効化、衛星写真に設定
+    var mapProperties by remember {
+        mutableStateOf(
+            MapProperties(
+                isMyLocationEnabled = true,
+                mapType = MapType.SATELLITE
+            )
+        )
+    }
 
     val currentLocation = locationDetail?.let {
         val latitude = it.latitude.toDouble()
@@ -206,17 +212,7 @@ fun MapView(
             position = CameraPosition.fromLatLngZoom(currentLocation, 17f)
         }
 
-        // 現在地有効化
-        var mapProperties by remember {
-            mutableStateOf(
-                MapProperties(
-                    isMyLocationEnabled = true,
-                    mapType = MapType.SATELLITE
-                )
-            )
-        }
-
-        // ボトムシート本体（マップロングクリク時に表示）
+        // ボトムシート本体（マップロングクリック時に表示）
         BottomSheetScaffold(
             scaffoldState = bottomSheetScaffoldState,
             sheetContent = {
@@ -266,6 +262,12 @@ fun MapView(
                                         if (isCollapsed) expand()
                                     }
                                 }
+                                cameraPositionState.position = CameraPosition.fromLatLngZoom(
+                                    LatLng(
+                                        it.position.latitude,
+                                        it.position.longitude
+                                    ), 17f
+                                )
                                 false
                             }
                         )
