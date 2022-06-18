@@ -33,7 +33,6 @@ data class DetailRecordState @RequiresApi(Build.VERSION_CODES.O) constructor(
     val location: LatLng = LatLng(0.0, 0.0),
     val done: Boolean = false,
     val isMapTypeSatellite: Boolean = true,
-    val isMapLoaded:Boolean = false,
     val isUpdateMode: Boolean = false,
     val errorMessage: String = ""
 )
@@ -89,12 +88,6 @@ class MapViewModel @Inject constructor(
     fun getLocationLiveData() = locationLiveData
     fun startLocation() {
         locationLiveData.startLocationUpdates()
-    }
-    /**
-     * マップ読み込み完了の状態をStateにセットする
-     */
-    fun mapLoaded(){
-        updateState { currentState().copy(isMapLoaded = true) }
     }
 
     /**

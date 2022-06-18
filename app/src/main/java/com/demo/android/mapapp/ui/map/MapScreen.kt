@@ -86,6 +86,9 @@ fun MapScreen(
     val bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
     val coroutineScope = rememberCoroutineScope()
 
+    // マップロード完了したかどうか
+    var isMapLoaded by remember { mutableStateOf(false) }
+
 
     // 画面本体
     Scaffold(
@@ -107,7 +110,7 @@ fun MapScreen(
                     bottomSheetScaffoldState,
                     coroutineScope,
                     currentLocation.value,
-                    onMapLoaded = { viewModel.mapLoaded() },
+                    onMapLoaded = { isMapLoaded = true },
                     onMapLongClick = { position ->
                         // 地図ロングクリックでStateの緯度経度更新、ボトムシート開閉
                         viewModel.updateTappedLocation(position)
@@ -116,6 +119,9 @@ fun MapScreen(
                                 if (isCollapsed) expand()
                             }
                         }
+
+                        // マーカーがボトムシートの上の領域の中心に来るようカメラ位置調整
+
 
                     },
                     onDateChange = { year: Int, month: Int, dayOfMonth: Int ->
@@ -157,10 +163,10 @@ fun MapScreen(
                 )
             }
 
-            if (!state.isMapLoaded) {
+            if (!isMapLoaded) {
                 AnimatedVisibility(
                     modifier = modifier.fillMaxSize(),
-                    visible = !state.isMapLoaded,
+                    visible = !isMapLoaded,
                     enter = EnterTransition.None,
                     exit = fadeOut(),
                 ) {
