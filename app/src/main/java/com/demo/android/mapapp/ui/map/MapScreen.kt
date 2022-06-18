@@ -9,6 +9,10 @@ import android.os.Build
 import android.widget.DatePicker
 import android.widget.TimePicker
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -20,6 +24,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -43,9 +48,12 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kotlin.math.ceil
+
+const val RATIO_BOTTOM_SHEET_HEIGHT = 0.5
 
 /**
- * 地図画面
+ * 地図画c面
  * accompanistの使い方参考：
  * https://google.github.io/accompanist/permissions/
  */
@@ -78,6 +86,7 @@ fun MapScreen(
     val bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
     val coroutineScope = rememberCoroutineScope()
 
+
     // 画面本体
     Scaffold(
         scaffoldState = scaffoldState,
@@ -88,60 +97,82 @@ fun MapScreen(
         // 位置情報が許可されたらマップ表示
         // 位置情報が許可されていなければ、理由説明/マップが使用できない旨表示→リクエストで権限リクエスト画面表示
         if (permissionState.status.isGranted) {
-            MapView(
-                viewModel,
-                state,
-                creatureList.value,
-                bottomSheetScaffoldState,
-                coroutineScope,
-                currentLocation.value,
-                onMapLongClick = { position ->
-                    // 地図ロングクリックでStateの緯度経度更新、ボトムシート開閉
-                    viewModel.updateTappedLocation(position)
-                    coroutineScope.launch {
-                        bottomSheetScaffoldState.bottomSheetState.apply {
-                            if (isCollapsed) expand()
-                        }
-                    }
 
-                },
-                onDateChange = { year: Int, month: Int, dayOfMonth: Int ->
-                    viewModel.updateRecordedAtDate(year, month, dayOfMonth)
-                },
-                onTimeChange = { hour: Int, minute: Int ->
-                    viewModel.updateRecordedAtTime(hour, minute)
-                },
-                onDecrement = { viewModel.decreaseCreatureNum() },
-                onIncrement = { viewModel.increaseCreatureNum() },
-                onValueChange = { memo -> viewModel.updateMemo(memo) },
-                onSaveRecord = {
-                    // 保存ボタンで位置情報記録、ボトムシートを閉じる
-                    viewModel.addCreatureDetail()
-                    coroutineScope.launch {
-                        bottomSheetScaffoldState.bottomSheetState.apply {
-                            if (isCollapsed) expand() else collapse()
+            // マップが読み込まれていなければサークルプログレスバー表示
+            Box(modifier.fillMaxSize(1f)) {
+                MapView(
+                    viewModel,
+                    state,
+                    creatureList.value,
+                    bottomSheetScaffoldState,
+                    coroutineScope,
+                    currentLocation.value,
+                    onMapLoaded = { viewModel.mapLoaded() },
+                    onMapLongClick = { position ->
+                        // 地図ロングクリックでStateの緯度経度更新、ボトムシート開閉
+                        viewModel.updateTappedLocation(position)
+                        coroutineScope.launch {
+                            bottomSheetScaffoldState.bottomSheetState.apply {
+                                if (isCollapsed) expand()
+                            }
+                        }
+
+                    },
+                    onDateChange = { year: Int, month: Int, dayOfMonth: Int ->
+                        viewModel.updateRecordedAtDate(year, month, dayOfMonth)
+                    },
+                    onTimeChange = { hour: Int, minute: Int ->
+                        viewModel.updateRecordedAtTime(hour, minute)
+                    },
+                    onDecrement = { viewModel.decreaseCreatureNum() },
+                    onIncrement = { viewModel.increaseCreatureNum() },
+                    onValueChange = { memo -> viewModel.updateMemo(memo) },
+                    onSaveRecord = {
+                        // 保存ボタンで位置情報記録、ボトムシートを閉じる
+                        viewModel.addCreatureDetail()
+                        coroutineScope.launch {
+                            bottomSheetScaffoldState.bottomSheetState.apply {
+                                if (isCollapsed) expand() else collapse()
+                            }
+                        }
+                    },
+                    onUpdateRecord = {
+                        // 更新ボタンで詳細情報更新、ボトムシートを閉じる
+                        viewModel.updateCreatureDetail()
+                        coroutineScope.launch {
+                            bottomSheetScaffoldState.bottomSheetState.apply {
+                                if (isCollapsed) expand() else collapse()
+                            }
+                        }
+                    },
+                    onDeleteRecord = {
+                        // 更新ボタンで詳細情報更新、ボトムシートを閉じる
+                        viewModel.deleteCreatureDetail()
+                        coroutineScope.launch {
+                            bottomSheetScaffoldState.bottomSheetState.apply {
+                                if (isCollapsed) expand() else collapse()
+                            }
                         }
                     }
-                },
-                onUpdateRecord = {
-                    // 更新ボタンで詳細情報更新、ボトムシートを閉じる
-                    viewModel.updateCreatureDetail()
-                    coroutineScope.launch {
-                        bottomSheetScaffoldState.bottomSheetState.apply {
-                            if (isCollapsed) expand() else collapse()
-                        }
-                    }
-                },
-                onDeleteRecord = {
-                    // 更新ボタンで詳細情報更新、ボトムシートを閉じる
-                    viewModel.deleteCreatureDetail()
-                    coroutineScope.launch {
-                        bottomSheetScaffoldState.bottomSheetState.apply {
-                            if (isCollapsed) expand() else collapse()
-                        }
-                    }
+                )
+            }
+
+            if (!state.isMapLoaded) {
+                AnimatedVisibility(
+                    modifier = modifier.fillMaxSize(),
+                    visible = !state.isMapLoaded,
+                    enter = EnterTransition.None,
+                    exit = fadeOut(),
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .background(MaterialTheme.colors.background)
+                            .wrapContentSize()
+                    )
                 }
-            )
+            }
+
+
         } else {
             Column(
                 modifier = modifier.fillMaxSize(),
@@ -179,6 +210,7 @@ fun MapView(
     bottomSheetScaffoldState: BottomSheetScaffoldState,
     coroutineScope: CoroutineScope,
     locationDetail: LocationDetail?,
+    onMapLoaded: () -> Unit,
     onMapLongClick: (position: LatLng) -> Unit,
     onDateChange: (year: Int, month: Int, dayOfMonth: Int) -> Unit,
     onTimeChange: (hour: Int, minute: Int) -> Unit,
@@ -239,6 +271,7 @@ fun MapView(
                     cameraPositionState = cameraPositionState,
                     properties = mapProperties,
                     uiSettings = uiSettings,
+                    onMapLoaded = onMapLoaded,
                     onMapLongClick = {
                         onMapLongClick(it)
                     }
@@ -316,9 +349,14 @@ fun BottomSheetContent(
     onUpdateRecord: () -> Unit,
     onDeleteRecord: () -> Unit
 ) {
+
+    // ボトムシートの高さ（画面の半分）
+    val heightOfSheet =
+        ceil(LocalConfiguration.current.screenHeightDp * RATIO_BOTTOM_SHEET_HEIGHT).toInt()
+
     Column(
         modifier
-            .height(400.dp)
+            .height(heightOfSheet.dp)
             .padding(16.dp)
     ) {
         val spacerSize = 16.dp
