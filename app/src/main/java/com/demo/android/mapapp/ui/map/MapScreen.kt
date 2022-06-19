@@ -5,7 +5,9 @@ import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Context
+import android.graphics.Point
 import android.os.Build
+import android.util.Log
 import android.widget.DatePicker
 import android.widget.TimePicker
 import androidx.annotation.RequiresApi
@@ -42,6 +44,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -51,6 +54,7 @@ import kotlinx.coroutines.launch
 import kotlin.math.ceil
 
 const val RATIO_BOTTOM_SHEET_HEIGHT = 0.5
+const val DEFAULT_CAMERA_ZOOM = 17f
 
 /**
  * 地図画c面
@@ -69,8 +73,15 @@ fun MapScreen(
     modifier: Modifier = Modifier
 ) {
 
+    // 現在位置
     val currentLocation =
         viewModel.getLocationLiveData().observeAsState()
+
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(
+            LatLng(0.0, 0.0), 17f
+        )
+    }
 
     val creatureList = viewModel.creatureList.collectAsState()
 
@@ -88,7 +99,6 @@ fun MapScreen(
 
     // マップロード完了したかどうか
     var isMapLoaded by remember { mutableStateOf(false) }
-
 
     // 画面本体
     Scaffold(
@@ -110,19 +120,8 @@ fun MapScreen(
                     bottomSheetScaffoldState,
                     coroutineScope,
                     currentLocation.value,
-                    onMapLoaded = { isMapLoaded = true },
-                    onMapLongClick = { position ->
-                        // 地図ロングクリックでStateの緯度経度更新、ボトムシート開閉
-                        viewModel.updateTappedLocation(position)
-                        coroutineScope.launch {
-                            bottomSheetScaffoldState.bottomSheetState.apply {
-                                if (isCollapsed) expand()
-                            }
-                        }
-
-                        // マーカーがボトムシートの上の領域の中心に来るようカメラ位置調整
-
-
+                    onMapLoaded = {
+                        isMapLoaded = true
                     },
                     onDateChange = { year: Int, month: Int, dayOfMonth: Int ->
                         viewModel.updateRecordedAtDate(year, month, dayOfMonth)
@@ -161,23 +160,22 @@ fun MapScreen(
                         }
                     }
                 )
-            }
-
-            if (!isMapLoaded) {
-                AnimatedVisibility(
-                    modifier = modifier.fillMaxSize(),
-                    visible = !isMapLoaded,
-                    enter = EnterTransition.None,
-                    exit = fadeOut(),
-                ) {
-                    CircularProgressIndicator(
-                        modifier = Modifier
-                            .background(MaterialTheme.colors.background)
-                            .wrapContentSize()
-                    )
+                // ローディング中のプログレスサークル
+                if (!isMapLoaded) {
+                    AnimatedVisibility(
+                        modifier = modifier.fillMaxSize(),
+                        visible = !isMapLoaded,
+                        enter = EnterTransition.None,
+                        exit = fadeOut(),
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier
+                                .background(MaterialTheme.colors.background)
+                                .wrapContentSize()
+                        )
+                    }
                 }
             }
-
 
         } else {
             Column(
@@ -215,9 +213,8 @@ fun MapView(
     creatureList: List<CreatureDetail>,
     bottomSheetScaffoldState: BottomSheetScaffoldState,
     coroutineScope: CoroutineScope,
-    locationDetail: LocationDetail?,
+    currentLocation: LocationDetail?,
     onMapLoaded: () -> Unit,
-    onMapLongClick: (position: LatLng) -> Unit,
     onDateChange: (year: Int, month: Int, dayOfMonth: Int) -> Unit,
     onTimeChange: (hour: Int, minute: Int) -> Unit,
     onDecrement: () -> Unit,
@@ -239,103 +236,123 @@ fun MapView(
             )
         )
     }
+    val offSetY =
+        ceil(LocalConfiguration.current.screenHeightDp * RATIO_BOTTOM_SHEET_HEIGHT).toInt()
 
-    val currentLocation = locationDetail?.let {
+    // カメラの状態（初期値LatLng(0.0, 0.0), 17f）
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(
+            LatLng(state.location.latitude, state.location.longitude),
+            DEFAULT_CAMERA_ZOOM
+        )
+    }
+
+    // 現在地が取得できたらカメラを現在地にフォーカス
+    val currentLocationLatLng = currentLocation?.let {
         val latitude = it.latitude.toDouble()
         val longitude = it.longitude.toDouble()
         LatLng(latitude, longitude)
     }
-    if (currentLocation != null) {
-        val cameraPositionState = rememberCameraPositionState {
-            position = CameraPosition.fromLatLngZoom(currentLocation, 17f)
-        }
+    if (currentLocationLatLng != null) {
+        cameraPositionState.position =
+            CameraPosition.fromLatLngZoom(currentLocationLatLng, DEFAULT_CAMERA_ZOOM)
+    }
 
-        // ボトムシート本体（マップロングクリック時に表示）
-        BottomSheetScaffold(
-            scaffoldState = bottomSheetScaffoldState,
-            sheetContent = {
-                BottomSheetContent(
-                    onValueChange = onValueChange,
-                    state = state,
-                    onDateChange = onDateChange,
-                    onTimeChange = onTimeChange,
-                    onDecrement = onDecrement,
-                    onIncrement = onIncrement,
-                    onSaveRecord = onSaveRecord,
-                    onUpdateRecord = onUpdateRecord,
-                    onDeleteRecord = onDeleteRecord
-                )
-            },
-            drawerGesturesEnabled = true,
-            sheetPeekHeight = 0.dp,
-        ) {
+    // ボトムシート本体（マップロングクリック時に表示）
+    BottomSheetScaffold(
+        scaffoldState = bottomSheetScaffoldState,
+        sheetContent = {
+            BottomSheetContent(
+                onValueChange = onValueChange,
+                state = state,
+                onDateChange = onDateChange,
+                onTimeChange = onTimeChange,
+                onDecrement = onDecrement,
+                onIncrement = onIncrement,
+                onSaveRecord = onSaveRecord,
+                onUpdateRecord = onUpdateRecord,
+                onDeleteRecord = onDeleteRecord
+            )
+        },
+        drawerGesturesEnabled = true,
+        sheetPeekHeight = 0.dp,
+    ) {
 
-            // マップ
-            Box(modifier = Modifier) {
-                GoogleMap(
-                    modifier = modifier.fillMaxSize(),
-                    cameraPositionState = cameraPositionState,
-                    properties = mapProperties,
-                    uiSettings = uiSettings,
-                    onMapLoaded = onMapLoaded,
-                    onMapLongClick = {
-                        onMapLongClick(it)
-                    }
-                ) {
-
-                    // 記録したい生き物のマーカーを表示（マップロングクリックで表示）
-                    Marker(state = MarkerState(state.location), draggable = true)
-
-                    // 記録済みのマーカーを表示。マーカークリックでボトムシート表示、記録済み情報を表示
-                    // onClickでstateの生き物情報を、クリックしたマーカーの情報に変更。削除、更新可能となる
-                    creatureList.forEach { creature ->
-                        val position = LatLng(creature.latitude, creature.longitude)
-                        Marker(
-                            state = MarkerState(position = position),
-                            draggable = false,
-                            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN),
-                            onClick = {
-                                viewModel.updateStateForEditCreature(creature)
-                                coroutineScope.launch {
-                                    bottomSheetScaffoldState.bottomSheetState.apply {
-                                        if (isCollapsed) expand()
-                                    }
-                                }
-                                cameraPositionState.position = CameraPosition.fromLatLngZoom(
-                                    LatLng(
-                                        it.position.latitude,
-                                        it.position.longitude
-                                    ), 17f
-                                )
-                                false
-                            }
+        // マップ
+        Box(modifier = Modifier) {
+            GoogleMap(
+                modifier = modifier.fillMaxSize(),
+                cameraPositionState = cameraPositionState,
+                properties = mapProperties,
+                uiSettings = uiSettings,
+                onMapLoaded = onMapLoaded,
+                onMapLongClick = {
+                    // 地図ロングクリックでStateの緯度経度更新、ボトムシート開閉
+                    // カメラ位置をボトムシート上の領域の中央にする todo なぜか機能しない
+                    viewModel.updateTappedLocation(it)
+                    coroutineScope.launch {
+                        bottomSheetScaffoldState.bottomSheetState.apply {
+                            if (isCollapsed) expand()
+                        }
+                        val projection = cameraPositionState.projection!!
+                        val pointOfMarker = projection.toScreenLocation(it)
+                        val pointToMove = Point(pointOfMarker.x, pointOfMarker.y + offSetY)
+                        val latLngToMove = projection.fromScreenLocation(pointToMove)
+                        cameraPositionState.animate(
+                            CameraUpdateFactory.newLatLng(latLngToMove),
+                            100
                         )
                     }
                 }
+            ) {
 
-                // 衛星写真切り替えスイッチ
-                Row(
-                    modifier
-                        .padding(top = 64.dp, end = 8.dp)
-                        .fillMaxWidth(1f),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = "Satellite")
-                        Switch(
-                            state.isMapTypeSatellite,
-                            onCheckedChange = {
-                                val mapType = if (it) MapType.SATELLITE else MapType.NORMAL
-                                mapProperties = mapProperties.copy(mapType = mapType)
-                                viewModel.changeMapType()
-                            },
-                            colors = SwitchDefaults.colors(uncheckedTrackColor = Color.DarkGray)
-                        )
-                    }
+                // 記録したい生き物のマーカーを表示（マップロングクリックで表示）
+                Marker(state = MarkerState(state.location), draggable = true)
+
+                // 記録済みのマーカーを表示。マーカークリックでボトムシート表示、記録済み情報を表示
+                // onClickでstateの生き物情報を、クリックしたマーカーの情報に変更。削除、更新可能となる
+                creatureList.forEach { creature ->
+                    val position = LatLng(creature.latitude, creature.longitude)
+                    Marker(
+                        state = MarkerState(position = position),
+                        draggable = false,
+                        icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN),
+                        onClick = {
+                            viewModel.updateStateForEditCreature(creature)
+                            coroutineScope.launch {
+                                bottomSheetScaffoldState.bottomSheetState.apply {
+                                    if (isCollapsed) expand()
+                                }
+                            }
+                            false
+                        }
+                    )
+                }
+            }
+
+            // 衛星写真切り替えスイッチ
+            Row(
+                modifier
+                    .padding(top = 64.dp, end = 8.dp)
+                    .fillMaxWidth(1f),
+                horizontalArrangement = Arrangement.End
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(text = "Satellite")
+                    Switch(
+                        state.isMapTypeSatellite,
+                        onCheckedChange = {
+                            val mapType = if (it) MapType.SATELLITE else MapType.NORMAL
+                            mapProperties = mapProperties.copy(mapType = mapType)
+                            viewModel.changeMapType()
+                        },
+                        colors = SwitchDefaults.colors(uncheckedTrackColor = Color.DarkGray)
+                    )
                 }
             }
         }
     }
+//    }
 }
 
 /**
