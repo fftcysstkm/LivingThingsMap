@@ -21,6 +21,18 @@ interface CreatureDao {
     fun getCreatures(): Flow<List<Creature>>
 
     /**
+     * 生き物リストに表示する生き物一覧をカテゴリーIDで取得
+     */
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @Query(
+        "SELECT creatureId, categoryId, creatureName " +
+                "FROM CREATURE " +
+                "WHERE categoryId = :categoryId " +
+                "ORDER BY categoryId, creatureId"
+    )
+    fun getCreaturesByCatId(categoryId: Long):Flow<List<Creature>>
+
+    /**
      * 生き物をIDで取得
      * @param creatureId 生き物ID
      * @return Creature 生き物クラス

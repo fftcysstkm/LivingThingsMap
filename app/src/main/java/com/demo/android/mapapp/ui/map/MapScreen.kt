@@ -34,9 +34,7 @@ import com.demo.android.mapapp.ui.add.CreateTopBar
 import com.demo.android.mapapp.viewmodel.map.DetailRecordState
 import com.demo.android.mapapp.viewmodel.map.MapViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
-import com.google.accompanist.permissions.shouldShowRationale
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -49,6 +47,7 @@ import kotlinx.coroutines.launch
  * accompanistの使い方参考：
  * https://google.github.io/accompanist/permissions/
  */
+@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterialApi::class)
 @Composable
@@ -87,7 +86,7 @@ fun MapScreen(
     ) {
         // 位置情報が許可されたらマップ表示
         // 位置情報が許可されていなければ、理由説明/マップが使用できない旨表示→リクエストで権限リクエスト画面表示
-        if (permissionState.status.isGranted) {
+        if (permissionState.hasPermission) {
             MapView(
                 viewModel,
                 state,
@@ -148,7 +147,7 @@ fun MapScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
-                val textToShow = if (permissionState.status.shouldShowRationale) {
+                val textToShow = if (permissionState.shouldShowRationale) {
                     "Location access is important for this app. Please grant the permission."
                 } else {
                     "Map not available"
