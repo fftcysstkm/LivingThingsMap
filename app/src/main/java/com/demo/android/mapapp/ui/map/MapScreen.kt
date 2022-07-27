@@ -41,7 +41,6 @@ import com.demo.android.mapapp.ui.add.CreateTopBar
 import com.demo.android.mapapp.viewmodel.map.DetailRecordState
 import com.demo.android.mapapp.viewmodel.map.MapViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -61,6 +60,7 @@ const val DEFAULT_CAMERA_ZOOM = 17f
  * accompanistの使い方参考：
  * https://google.github.io/accompanist/permissions/
  */
+@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterialApi::class)
 @Composable
@@ -183,7 +183,7 @@ fun MapScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
-                val textToShow = if (permissionState.status.shouldShowRationale) {
+                val textToShow = if (permissionState.shouldShowRationale) {
                     "Location access is important for this app. Please grant the permission."
                 } else {
                     "Map not available"

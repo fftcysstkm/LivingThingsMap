@@ -62,23 +62,23 @@ fun AddCreatureScreen(
         // トップバー
         topBar = {
             CreateTopBar(onClickTopBarBack)
-        }) {
-        // 入力欄
-        AddCreatureBody(
-            state,
-            onOptionSelected = { index, selected ->
-                viewModel.updateSelectedOption(
-                    index,
-                    selected
-                )
-            },
-            onInputNameChange = { name -> viewModel.updateCreatureName(name) },
-            onInputMemoChange = { memo -> viewModel.updateMemo(memo) },
-            modifier = modifier
-        ) {
-            viewModel.save(state.creatureName, state.selectedIndex, state.memo)
-        }
-    }
+        }, content = { padding ->
+            // 入力欄
+            AddCreatureBody(
+                state,
+                onOptionSelected = { index, selected ->
+                    viewModel.updateSelectedOption(
+                        index,
+                        selected
+                    )
+                },
+                onInputNameChange = { name -> viewModel.updateCreatureName(name) },
+                onInputMemoChange = { memo -> viewModel.updateMemo(memo) },
+                modifier = modifier.padding(padding)
+            ) {
+                viewModel.save(state.creatureName, state.selectedIndex, state.memo)
+            }
+        })
 }
 
 /**

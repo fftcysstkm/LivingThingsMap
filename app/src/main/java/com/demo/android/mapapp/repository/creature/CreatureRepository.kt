@@ -14,6 +14,11 @@ interface CreatureRepository {
     fun getCreatures(): Flow<List<Creature>>
 
     /**
+     * 生き物リストに表示する生き物一覧をカテゴリーIDで取得
+     */
+    fun getCreaturesByCatId(categoryId:Long):Flow<List<Creature>>
+
+    /**
      * 生き物をIDで取得
      */
     fun getCreatureById(creatureId: Long): Creature
