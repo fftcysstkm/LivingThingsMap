@@ -7,7 +7,6 @@ import android.app.TimePickerDialog
 import android.content.Context
 import android.graphics.Point
 import android.os.Build
-import android.util.Log
 import android.widget.DatePicker
 import android.widget.TimePicker
 import androidx.annotation.RequiresApi
@@ -42,7 +41,6 @@ import com.demo.android.mapapp.viewmodel.map.DetailRecordState
 import com.demo.android.mapapp.viewmodel.map.MapViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
-import com.google.accompanist.permissions.shouldShowRationale
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
@@ -109,7 +107,7 @@ fun MapScreen(
     ) {
         // 位置情報が許可されたらマップ表示
         // 位置情報が許可されていなければ、理由説明/マップが使用できない旨表示→リクエストで権限リクエスト画面表示
-        if (permissionState.status.isGranted) {
+        if (permissionState.hasPermission) {
 
             // マップが読み込まれていなければサークルプログレスバー表示
             Box(modifier.fillMaxSize(1f)) {
