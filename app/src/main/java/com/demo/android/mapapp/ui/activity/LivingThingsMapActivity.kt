@@ -50,14 +50,19 @@ fun MapApp() {
                     onClickList = { creatureId, creatureName, categoryId ->
                         navController.navigate("map/$creatureId/$creatureName/$categoryId")
                     },
-                    onClickFab = { navController.navigate("add") })
-            }
-            // 生き物追加
-            composable("add") {
+                    onClickFab = { categoryId -> navController.navigate("add/$categoryId") })
+        }
+            // 生き物追加画面に遷移（生き物IDを引数として一覧画面から受け取る）
+            composable(
+                route = "add/{categoryId}",
+                arguments = listOf(navArgument("categoryId") { type = NavType.LongType }))
+            { backStackEntry ->
+                val categoryId = backStackEntry.arguments?.getLong("categoryId")
                 val viewModel = hiltViewModel<AddCreatureViewModel>()
                 AddCreatureScreen(
                     viewModel = viewModel,
-                    onClickTopBarBack = { navController.popBackStack() }
+                    onClickTopBarBack = { navController.popBackStack() },
+                    categoryId = categoryId
                 )
             }
             // 生き物編集(生き物IDを引数としてわたす)

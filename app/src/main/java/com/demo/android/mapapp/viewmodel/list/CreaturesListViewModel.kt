@@ -1,14 +1,17 @@
 package com.demo.android.mapapp.viewmodel.list
 
+import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.demo.android.mapapp.R
 import com.demo.android.mapapp.model.creature.Creature
 import com.demo.android.mapapp.repository.creature.CreatureRepository
 import com.demo.android.mapapp.viewmodel.add.AddCreatureScreenState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -18,18 +21,7 @@ import javax.inject.Inject
  * （タブに表示）
  */
 data class CreatureListState(
-    val categories: List<String> = listOf(
-        "鳥",
-        "虫",
-        "魚",
-        "爬虫類",
-        "両生類",
-        "植物",
-        "菌類",
-        "軟体動物",
-        "哺乳類",
-        "その他"
-    ),
+    val categories: List<String> = listOf(),
     val currentIndex: Int = 0
 )
 
@@ -38,7 +30,8 @@ data class CreatureListState(
  */
 @HiltViewModel
 class CreaturesListViewModel @Inject constructor(
-    private val repository: CreatureRepository
+    private val repository: CreatureRepository,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(CreatureListState())
@@ -51,8 +44,12 @@ class CreaturesListViewModel @Inject constructor(
     private val _creatures = MutableStateFlow<List<Creature>>(emptyList())
     val creatures = _creatures.asStateFlow()
 
-
+    // 初期設定
     init {
+        // 生き物カテゴリをリソースから取得して設定
+        updateState { currentState().copy(categories =
+            listOf(*context.resources.getStringArray(R.array.category_list)))}
+        // 生き物リストを内部DBから取得して設定
         viewModelScope.launch {
             repository.getCreaturesByCatId(0).collect() {
                 _creatures.value = it
@@ -67,6 +64,7 @@ class CreaturesListViewModel @Inject constructor(
      * 現在のタブを変更する
      */
     fun updateCreatureList(index: Int) {
+        updateState { currentState().copy(currentIndex = index) }
         viewModelScope.launch {
             repository.getCreaturesByCatId(index.toLong()).collect(){
                 _creatures.value = it
