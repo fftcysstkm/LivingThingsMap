@@ -16,6 +16,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.demo.android.mapapp.R
 import com.demo.android.mapapp.viewmodel.add.AddCreatureScreenState
 import com.demo.android.mapapp.viewmodel.add.AddCreatureViewModel
@@ -25,17 +26,22 @@ import com.demo.android.mapapp.viewmodel.add.AddCreatureViewModel
  * 参考：https://blog.mokelab.com/71/compose_todo9.html
  * @param viewModel
  * @param onClickTopBarBack 前の画面に戻る処理
+ * @param categoryId 生き物カテゴリID
  * @param modifier
  */
 @Composable
 fun AddCreatureScreen(
     viewModel: AddCreatureViewModel,
     onClickTopBarBack: () -> Unit,
+    categoryId:Long?,
     modifier: Modifier = Modifier
 ) {
 
     // scaffoldの状態
     val scaffoldState = rememberScaffoldState()
+    // 生き物リスト画面から渡されたカテゴリIDで、画面にカテゴリ名を表示する
+    if(categoryId != null) viewModel.setCategoryName(categoryId)
+
     // 監視するUIの状態(変更があった場合、UIを再Compose)
     val state by viewModel.state.collectAsState()
 
@@ -66,17 +72,11 @@ fun AddCreatureScreen(
             // 入力欄
             AddCreatureBody(
                 state,
-                onOptionSelected = { index, selected ->
-                    viewModel.updateSelectedOption(
-                        index,
-                        selected
-                    )
-                },
                 onInputNameChange = { name -> viewModel.updateCreatureName(name) },
                 onInputMemoChange = { memo -> viewModel.updateMemo(memo) },
                 modifier = modifier.padding(padding)
             ) {
-                viewModel.save(state.creatureName, state.selectedIndex, state.memo)
+                viewModel.save(state.creatureName, categoryId!!.toInt(), state.memo)
             }
         })
 }
@@ -109,19 +109,16 @@ fun CreateTopBar(onClickTopBarBack: () -> Unit) {
 @Composable
 fun AddCreatureBody(
     state: AddCreatureScreenState,
-    onOptionSelected: (Int, String) -> Unit,
     onInputNameChange: (String) -> Unit,
     onInputMemoChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     save: () -> Unit,
 ) {
     Column(modifier = modifier.padding(16.dp)) {
-        // 生き物カテゴリー
-        CategoryRadioButton(
-            radioOptions = state.categories,
-            selectedOption = state.selected,
-            onOptionSelected = onOptionSelected
-        )
+
+        // 生き物カテゴリ名
+        Text(state.categoryName, fontSize = 32.sp)
+
         // 生き物の名前
         RowItem(
             iconId = R.drawable.ic_abc_24,
@@ -150,59 +147,6 @@ fun AddCreatureBody(
                 .fillMaxWidth(1f), onClick = save
         ) {
             Text("追加")
-        }
-    }
-}
-
-/**
- * 生きものカテゴリーのラジオボタン
- *
- */
-@Composable
-fun CategoryRadioButton(
-    radioOptions: List<String>,
-    selectedOption: String,
-    onOptionSelected: (Int, String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Row(verticalAlignment = Alignment.Top) {
-
-        // アイコン
-        Column(modifier = modifier.padding(top = 4.dp)) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_category_24),
-                contentDescription = ""
-            )
-        }
-
-        // ラジオボタン用意(選択肢の数だけ用意)
-        Column(modifier.selectableGroup()) {
-            radioOptions.forEachIndexed { index, text ->
-                Row(
-                    modifier
-                        .fillMaxWidth()
-                        .height(36.dp)
-                        .selectable(
-                            selected = (text == selectedOption),
-                            onClick = { onOptionSelected(index, text) },
-                            role = Role.RadioButton
-                        ),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // ラジオボタン
-                    RadioButton(
-                        selected = (text == selectedOption),
-                        onClick = null,
-                        modifier = modifier.padding(start = 8.dp)
-                    )
-                    // ラベル
-                    Text(
-                        text = text,
-                        style = MaterialTheme.typography.body1.merge(),
-                        modifier = modifier.padding(start = 8.dp)
-                    )
-                }
-            }
         }
     }
 }
