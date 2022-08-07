@@ -29,7 +29,7 @@ import kotlinx.coroutines.launch
 fun CreatureListScreen(
     viewModel: CreaturesListViewModel,
     onClickList: (Long, String, Long) -> Unit,
-    onClickFab: () -> Unit,
+    onClickFab: (Long?) -> Unit,
     modifier: Modifier = Modifier
 ) {
     // タブ切り替えに必要なコルーチンスコープ
@@ -50,7 +50,7 @@ fun CreatureListScreen(
     Scaffold(
         scaffoldState = scaffoldState,
         topBar = { TopBar() },
-        floatingActionButton = { AddFab(onClickFab = onClickFab) }, content = { padding ->
+        floatingActionButton = { AddFab(onClickFab = {onClickFab(uiState.value.currentIndex.toLong())}) }, content = { padding ->
 
             Column(modifier = modifier.padding(padding)) {
                 // 生き物カテゴリーのタブ
@@ -69,13 +69,6 @@ fun CreatureListScreen(
                     onClickList = onClickList,
                 )
             }
-
-            // 一覧表示
-//            CreaturesList(
-//                list = creatures,
-//                onClickList = onClickList,
-//                modifier = Modifier.padding(padding)
-//            )
         })
 }
 
@@ -146,30 +139,6 @@ fun TabContent(
                         )
                     })
             }
-        }
-    }
-}
-
-/**
- * 生き物リストを表すパーツ
- */
-@Composable
-fun CreaturesList(
-    list: State<List<Creature>>,
-    onClickList: (Long, String, Long) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    LazyColumn(modifier.padding(8.dp)) {
-        items(list.value) { creature ->
-            CreatureCard(
-                creatureName = creature.creatureName,
-                modifier = modifier.clickable {
-                    onClickList(
-                        creature.creatureId,
-                        creature.creatureName,
-                        creature.categoryId
-                    )
-                })
         }
     }
 }
