@@ -17,8 +17,7 @@ import com.demo.android.mapapp.ui.edit.EditCreatureScreen
 import com.demo.android.mapapp.ui.list.CreatureListScreen
 import com.demo.android.mapapp.ui.map.MapScreen
 import com.demo.android.mapapp.ui.theme.LivingThingsMapTheme
-import com.demo.android.mapapp.viewmodel.add.AddCreatureViewModel
-import com.demo.android.mapapp.viewmodel.edit.EditCreatureViewModel
+import com.demo.android.mapapp.viewmodel.list_detail.CreatureListDetailViewModel
 import com.demo.android.mapapp.viewmodel.list.CreaturesListViewModel
 import com.demo.android.mapapp.viewmodel.map.MapViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -47,38 +46,75 @@ fun MapApp() {
                 val viewModel = hiltViewModel<CreaturesListViewModel>()
                 CreatureListScreen(
                     viewModel = viewModel,
-                    onClickList = { creatureId, creatureName, categoryId ->
-                        navController.navigate("map/$creatureId/$creatureName/$categoryId")
+                    onClickList = { creatureId, creatureName, memo, categoryId ->
+                        val route =
+                            if (memo != null) "$creatureId/$creatureName/$categoryId?memo=$memo" else "$creatureId/$creatureName/$categoryId"
+                        navController.navigate(
+                            "map/$route"
+                        )
                     },
-                    onClickFab = { categoryId -> navController.navigate("add/$categoryId") })
-        }
-            // 生き物追加画面に遷移（生き物IDを引数として一覧画面から受け取る）
+                    onClickFab = { categoryId -> navController.navigate("add/$categoryId") },
+                    onClickListWhenEdit = { creatureId, creatureName, memo, categoryId ->
+                        val route =
+                            if (memo != null) "$creatureId/$creatureName/$categoryId?memo=$memo" else "$creatureId/$creatureName/$categoryId"
+                        navController.navigate(
+                            "edit/$route"
+                        )
+                    }
+                )
+            }
+
+            // 生き物追加画面に遷移（カテゴリーIDを引数として一覧画面から受け取る）
             composable(
                 route = "add/{categoryId}",
-                arguments = listOf(navArgument("categoryId") { type = NavType.LongType }))
+                arguments = listOf(navArgument("categoryId") { type = NavType.LongType })
+            )
             { backStackEntry ->
                 val categoryId = backStackEntry.arguments?.getLong("categoryId")
-                val viewModel = hiltViewModel<AddCreatureViewModel>()
+                val viewModel = hiltViewModel<CreatureListDetailViewModel>()
                 AddCreatureScreen(
                     viewModel = viewModel,
                     onClickTopBarBack = { navController.popBackStack() },
                     categoryId = categoryId
                 )
             }
-            // 生き物編集(生き物IDを引数としてわたす)
-            composable("edit/{creatureId}") { backStackEntry ->
-                val viewModel = hiltViewModel<EditCreatureViewModel>()
-                val creatureId =
-                    backStackEntry.arguments?.getString("creatureId")?.toInt() ?: 0
-                EditCreatureScreen(viewModel = viewModel, creatureId = creatureId)
-            }
-            // マップ（生き物IDを引数としてわたす）
-            composable(
-                route = "map/{creatureId}/{creatureName}/{categoryId}",
+
+            // 生き物編集(カテゴリーID、生き物ID、生き物名、追加モードか編集モードかを引数としてわたす)
+            composable(route = "edit/{creatureId}/{creatureName}/{categoryId}?memo={memo}",
                 arguments = listOf(
                     navArgument("creatureId") { type = NavType.LongType },
                     navArgument("creatureName") { type = NavType.StringType },
                     navArgument("categoryId") { type = NavType.LongType },
+                    navArgument("memo") {
+                        type = NavType.StringType
+                        nullable = true
+                    }
+                )) { backStackEntry ->
+                val viewModel = hiltViewModel<CreatureListDetailViewModel>()
+                val creatureId =
+                    backStackEntry.arguments?.getLong("creatureId") ?: 0
+                val creatureName = backStackEntry.arguments?.getString("creatureName") ?: ""
+                val categoryId = backStackEntry.arguments?.getLong("categoryId") ?: 0
+                EditCreatureScreen(
+                    viewModel = viewModel,
+                    categoryId = categoryId,
+                    creatureId = creatureId,
+                    creatureName = creatureName,
+                    onClickTopBarBack = { navController.popBackStack() }
+                )
+            }
+
+            // マップ（生き物IDを引数としてわたす）
+            composable(
+                route = "map/{creatureId}/{creatureName}/{categoryId}?memo={memo}",
+                arguments = listOf(
+                    navArgument("creatureId") { type = NavType.LongType },
+                    navArgument("creatureName") { type = NavType.StringType },
+                    navArgument("categoryId") { type = NavType.LongType },
+                    navArgument("memo") {
+                        type = NavType.StringType
+                        nullable = true
+                    }
                 )
             ) { backStackEntry ->
                 val viewModel = hiltViewModel<MapViewModel>()

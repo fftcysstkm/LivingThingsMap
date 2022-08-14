@@ -1,15 +1,11 @@
 package com.demo.android.mapapp.viewmodel.list
 
 import android.content.Context
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.demo.android.mapapp.R
 import com.demo.android.mapapp.model.creature.Creature
 import com.demo.android.mapapp.repository.creature.CreatureRepository
-import com.demo.android.mapapp.viewmodel.add.AddCreatureScreenState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.*
@@ -22,7 +18,8 @@ import javax.inject.Inject
  */
 data class CreatureListState(
     val categories: List<String> = listOf(),
-    val currentIndex: Int = 0
+    val currentIndex: Int = 0,
+    val isEditMode: Boolean = false
 )
 
 /**
@@ -57,9 +54,6 @@ class CreaturesListViewModel @Inject constructor(
         }
     }
 
-
-
-
     /**
      * 現在のタブを変更する
      */
@@ -70,6 +64,13 @@ class CreaturesListViewModel @Inject constructor(
                 _creatures.value = it
             }
         }
+    }
+
+    /**
+     * 編集モード切り替え
+     */
+    fun changeEditMode() {
+        updateState { currentState().copy(isEditMode = !_state.value.isEditMode) }
     }
 
 }
