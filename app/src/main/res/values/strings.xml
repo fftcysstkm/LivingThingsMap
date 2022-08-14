@@ -1,17 +1,11 @@
 <resources>
-    <string name="app_name">MapAppTest</string>
+    <string name="app_name">Living Things Map</string>
     <string name="title_activity_maps">MapsActivity</string>
 
     <!-- Permissions -->
     <string name="permission_rationale_location">Access to the location service is required to demonstrate the \'my location\' feature, which shows your current location on the map.</string>
     <string name="location_permission_denied">This sample requires location permission to enable the \'my location\' layer. Please try again and grant access to use the location.\nIf the permission has been permanently denied, it can be enabled from the System Settings &gt; Apps &gt; \'Google Maps API Demos\'.</string>
     <string name="permission_required_toast">Location permission is required for this demo.</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="hint_text_creature_type">生き物のタイプ</string>
-    <string name="hint_text_creature_name">生き物の名前</string>
-    <string name="hint_text_tag">タグ</string>
-    <string name="add_to_list_text">追加</string>
 
     <!-- 生き物登録画面のラジオボタンの選択肢 -->
     <string-array name="category_list">
@@ -27,6 +21,18 @@
         <item>その他</item>
     </string-array>
 
-    <!-- エラーメッセージ -->
+    <!-- 生き物リスト画面での編集モードを表すカードのテキスト -->
+    <string name="edit_mode_message">編集モード</string>
+
+    <!-- 生きものリスト詳細画面 -->
+    <string name="hint_text_creature_type">生き物のタイプ</string>
+    <string name="hint_text_creature_name">生き物の名前</string>
+    <string name="hint_text_creature_memo">備考</string>
+    <string name="add_to_list_text">追加</string>
+    <string name="update_list_text">更新</string>
+    <string name="delete_list_text">削除</string>
+    <string name="error_empty_name_text">生き物の名前を入力してください。</string>
+    <string name="confirm_delete">この生き物を削除しますか？位置情報も削除されます。</string>
+
     <string name="error_empty_input">生き物タイプと生き物の名前を入力してください。</string>
 </resources>

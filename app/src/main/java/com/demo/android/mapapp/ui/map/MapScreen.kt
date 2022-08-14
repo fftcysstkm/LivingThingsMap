@@ -36,7 +36,6 @@ import com.demo.android.mapapp.R
 import com.demo.android.mapapp.model.creature.CreatureDetail
 import com.demo.android.mapapp.model.date.RecordDateTime
 import com.demo.android.mapapp.model.location.LocationDetail
-import com.demo.android.mapapp.ui.add.CreateTopBar
 import com.demo.android.mapapp.viewmodel.map.DetailRecordState
 import com.demo.android.mapapp.viewmodel.map.MapViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi

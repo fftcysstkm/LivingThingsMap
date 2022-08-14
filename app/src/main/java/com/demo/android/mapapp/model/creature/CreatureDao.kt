@@ -25,12 +25,17 @@ interface CreatureDao {
      */
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
-        "SELECT creatureId, categoryId, creatureName " +
+        "SELECT creatureId, categoryId, creatureName, memo " +
                 "FROM CREATURE " +
                 "WHERE categoryId = :categoryId " +
                 "ORDER BY categoryId, creatureId"
     )
-    fun getCreaturesByCatId(categoryId: Long):Flow<List<Creature>>
+    fun getCreaturesByCatId(categoryId: Long): Flow<List<Creature>>
+
+
+    /**
+     * 生きもの詳細(creature_detail)を更新する
+     */
 
     /**
      * 生き物をIDで取得
@@ -47,6 +52,22 @@ interface CreatureDao {
      */
     @Insert
     suspend fun addCreature(creature: Creature)
+
+    /**
+     * 生きものリストに表示する生きものを更新する
+     * @param creatureId 生き物Id
+     * @param creatureName 生き物名
+     * @param memo 備考
+     */
+    @Query("UPDATE Creature SET creatureName = :creatureName, memo = :memo WHERE creatureId = :creatureId")
+    suspend fun updateCreature(creatureId: Long, creatureName: String, memo: String): Int
+
+    /**
+     * 生き物リスト表示中の生き物を削除する(creatureテーブルから)
+     * @param 生き物ID
+     */
+    @Query("DELETE FROM Creature WHERE creatureId = :creatureId")
+    suspend fun deleteCreatureById(creatureId: Long): Int
 
     /**
      * 生き物の詳細情報（位置情報）を登録
@@ -80,4 +101,10 @@ interface CreatureDao {
     @Delete
     suspend fun deleteCreatureDetail(creatureDetail: CreatureDetail): Int
 
+    /**
+     * 生き物の詳細情報をIDで削除する
+     * @param creatureId 生き物ID
+     */
+    @Query("DELETE FROM CreatureDetail WHERE creatureId = :creatureId")
+    suspend fun deleteCreatureDetailById(creatureId: Long): Int
 }
