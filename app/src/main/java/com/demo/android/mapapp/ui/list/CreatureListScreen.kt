@@ -107,7 +107,7 @@ fun CreatureListScreen(
                                 .align(Alignment.BottomCenter)
                                 .offset(x = 0.dp, y = (-22).dp),
                             shape = RoundedCornerShape(16.dp),
-                            backgroundColor = Color.DarkGray,
+                            backgroundColor = Color.Gray,
                             elevation = 1.dp
                         ) {
                             Text(
