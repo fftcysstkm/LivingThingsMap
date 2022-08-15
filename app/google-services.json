@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "721339974181",
+    "project_id": "livingthingsmap",
+    "storage_bucket": "livingthingsmap.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:721339974181:android:82a01ea732d7e5c39535cc",
+        "android_client_info": {
+          "package_name": "com.tkmst.android.mapapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "721339974181-r3fjpa8lhg9lrgt99ls1nfq56vlruv9f.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.tkmst.android.mapapp",
+            "certificate_hash": "f06426f33a0cbe065f30b85ac332c4d0c30ab8b3"
+          }
+        },
+        {
+          "client_id": "721339974181-i1fsd40h59aubjvqukcsc5ei9807g3bk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCdyp8YqStQavoT5jK5eo3_QH0ii50Hy5Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "721339974181-i1fsd40h59aubjvqukcsc5ei9807g3bk.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
