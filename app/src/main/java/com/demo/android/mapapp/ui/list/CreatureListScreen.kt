@@ -43,7 +43,7 @@ fun CreatureListScreen(
     // タブ切り替えに必要なコルーチンスコープ
     val coroutineScope = rememberCoroutineScope()
     // BackHandlerが有効かどうか（システムの戻るボタンを押したときに利用）
-    var backHandlingEnabled by remember { mutableStateOf(true) }
+    val backHandlingEnabled by remember { mutableStateOf(true) }
 
     // scaffoldの状態
     val scaffoldState = rememberScaffoldState()

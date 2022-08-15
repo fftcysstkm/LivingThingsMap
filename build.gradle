@@ -24,7 +24,7 @@ buildscript {
         compose_maps_version = "2.5.3"
 
         // accompanist
-        accompanist_version = "0.23.1"
+        accompanist_version = "0.26.1-alpha"
     }
 
     dependencies {
