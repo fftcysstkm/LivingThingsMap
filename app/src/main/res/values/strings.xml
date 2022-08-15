@@ -3,12 +3,12 @@
     <string name="title_activity_maps">MapsActivity</string>
 
     <!-- Permissions -->
-    <string name="permission_allowed_partial">おおよその位置情報の使用のみが許可されました。アプリを利用するには正確な位置情報の使用を許可してください。。</string>
+    <string name="permission_allowed_partial">おおよその位置情報の使用のみが許可されました。アプリを利用するには正確な位置情報の使用を許可してください。</string>
     <string name="permission_all_denied">このアプリには位置情報の使用許可が必要です。位置情報の利用を許可してください。</string>
     <string name="permission_first_use">このアプリには位置情報の許可が必要です。</string>
     <string name="permission_button_text_not_allowed">位置情報の使用を許可</string>
     <string name="permission_button_text_first_use">権限を要求</string>
-    <string name="note_text_first_use">権限を要求</string>
+    <string name="note_text_first_use">初回使用時は地図が開けないことがあります。その場合は、前の画面に一度戻って再度地図を開いてください。</string>
 
     <!-- 生き物登録画面のラジオボタンの選択肢 -->
     <string-array name="category_list">
