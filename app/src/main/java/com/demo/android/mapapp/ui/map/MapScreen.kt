@@ -39,6 +39,7 @@ import com.demo.android.mapapp.model.location.LocationDetail
 import com.demo.android.mapapp.viewmodel.map.DetailRecordState
 import com.demo.android.mapapp.viewmodel.map.MapViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
@@ -87,8 +88,13 @@ fun MapScreen(
     // scaffoldの状態
     val scaffoldState = rememberScaffoldState()
 
-    // 位置情報が許可されたかを監視(ACCESS_FINE_LOCATIONが許可されればACCESS_COARSE_LOCATIONも許可される)
-    val permissionState = rememberPermissionState(Manifest.permission.ACCESS_FINE_LOCATION)
+    // 位置情報が許可されたかを監視
+    val locationPermissionsState = rememberMultiplePermissionsState(
+        listOf(
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+        )
+    )
 
     // ボトムシートの状態、開閉操作に必要なcoroutineScope
     val bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
@@ -106,7 +112,7 @@ fun MapScreen(
     ) {
         // 位置情報が許可されたらマップ表示
         // 位置情報が許可されていなければ、理由説明/マップが使用できない旨表示→リクエストで権限リクエスト画面表示
-        if (permissionState.hasPermission) {
+        if (locationPermissionsState.allPermissionsGranted) {
 
             // マップが読み込まれていなければサークルプログレスバー表示
             Box(modifier.fillMaxSize(1f)) {
@@ -181,16 +187,49 @@ fun MapScreen(
                 verticalArrangement = Arrangement.Center
             ) {
 
-                val textToShow = if (permissionState.shouldShowRationale) {
-                    "Location access is important for this app. Please grant the permission."
-                } else {
-                    "Map not available"
+                // 位置情報FINEとCOARSE両方とも許可されたか
+                val allPermissionsRevoked =
+                    locationPermissionsState.permissions.size ==
+                            locationPermissionsState.revokedPermissions.size
+
+                // 部分的に許可された場合（COARSEのみ）
+                val textToShow = if (!allPermissionsRevoked) {
+                    stringResource(id = R.string.permission_allowed_partial)
+                } else if (locationPermissionsState.shouldShowRationale) {
+                    // どちらも拒否された場合
+                    stringResource(id = R.string.permission_all_denied)
+                }else{
+                    // アプリ初回利用時にマップ画面を開いたとき
+                    stringResource(id = R.string.permission_first_use)
                 }
 
-                Text(textToShow)
+                val buttonText = if(!allPermissionsRevoked){
+                    stringResource(id = R.string.permission_button_text_not_allowed)
+                }else{
+                    stringResource(id = R.string.permission_button_text_first_use)
+                }
+
+                Row(
+                    modifier = modifier
+                        .align(Alignment.CenterHorizontally)
+                ) {
+                    Text(text = textToShow)
+                }
+
                 Spacer(modifier = Modifier.height(8.dp))
-                Button(onClick = { permissionState.launchPermissionRequest() }) {
-                    Text("Request permission")
+
+                Button(onClick = { locationPermissionsState.launchMultiplePermissionRequest() }) {
+                    Text(text = buttonText)
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Row(
+                    modifier = modifier
+                        .padding(start = 16.dp, end = 16.dp)
+                        .align(Alignment.CenterHorizontally)
+                ) {
+                    Text(text = stringResource(id = R.string.note_text_first_use), fontSize = 12.sp)
                 }
             }
         }
