@@ -53,7 +53,7 @@ const val RATIO_BOTTOM_SHEET_HEIGHT = 0.5
 const val DEFAULT_CAMERA_ZOOM = 17f
 
 /**
- * 地図画c面
+ * 地図画面
  * accompanistの使い方参考：
  * https://google.github.io/accompanist/permissions/
  */
@@ -177,7 +177,8 @@ fun MapScreen(
         } else {
             Column(
                 modifier = modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
 
                 val textToShow = if (permissionState.shouldShowRationale) {
