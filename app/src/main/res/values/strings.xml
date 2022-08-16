@@ -17,10 +17,11 @@
         <item>魚</item>
         <item>爬虫類</item>
         <item>両生類</item>
+        <item>哺乳類</item>
         <item>植物</item>
         <item>菌類</item>
         <item>軟体動物</item>
-        <item>哺乳類</item>
+        <item>甲殻類</item>
         <item>その他</item>
     </string-array>
 

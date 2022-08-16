@@ -1,8 +1,12 @@
-package com.tkmst.android.mapapp.model.creature
+package com.tkmst.android.mapapp.model.hilt
 
 import android.content.Context
 import androidx.room.Room
 import com.tkmst.android.mapapp.application.LivingThingsMapApplication
+import com.tkmst.android.mapapp.model.creature.CreatureDao
+import com.tkmst.android.mapapp.model.creature.CreatureRoomDatabase
+import com.tkmst.android.mapapp.model.user.UserPreferencesDao
+import com.tkmst.android.mapapp.model.user.UserPreferencesRoomDatabase
 import com.tkmst.android.mapapp.repository.creature.CreatureRepository
 import com.tkmst.android.mapapp.repository.creature.CreatureRepositoryImpl
 import dagger.Binds
@@ -19,10 +23,10 @@ import javax.inject.Singleton
  */
 @Module
 @InstallIn(SingletonComponent::class)
-object CreatureModule {
+object HiltModule {
 
     /**
-     * Databaseインスタンスの作り方をHiltに伝達
+     * CreatureRoomDatabaseインスタンスの作り方をHiltに伝達
      * 事前定義のDBあり
      */
     @Singleton
@@ -40,12 +44,39 @@ object CreatureModule {
     }
 
     /**
-     * Daoインスタンスの作り方をHiltに伝達
+     * CreatureDaoインスタンスの作り方をHiltに伝達
      */
     @Singleton
     @Provides
     fun provideCreatureDao(database: CreatureRoomDatabase): CreatureDao {
         return database.creatureDao()
+    }
+
+    /**
+     * UserPreferencesRoomDatabaseインスタンスの作り方をHiltに伝達
+     * 事前定義のDBあり
+     */
+    @Singleton
+    @Provides
+    fun provideUserPreferencesRoomDatabase(
+        @ApplicationContext context: Context
+    ): UserPreferencesRoomDatabase {
+        return Room.databaseBuilder(
+            context,
+            UserPreferencesRoomDatabase::class.java,
+            "creatures"
+        )
+            .createFromAsset("database/creatures.db")
+            .build()
+    }
+
+    /**
+     * UserPreferencesDaoインスタンスの作り方をHiltに伝達
+     */
+    @Singleton
+    @Provides
+    fun provideUserPreferencesDao(database: UserPreferencesRoomDatabase): UserPreferencesDao {
+        return database.userPreferencesDao()
     }
 
     /**
