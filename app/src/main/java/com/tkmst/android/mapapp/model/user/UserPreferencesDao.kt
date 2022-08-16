@@ -14,7 +14,7 @@ interface UserPreferencesDao {
      * @return UserPreferences ユーザ設定情報クラス
      */
     @Query("SELECT * FROM UserPreferences WHERE userName = 'user'")
-    fun getUserPreferences(): UserPreferences
+    suspend fun getUserPreferences(): UserPreferences
 
     /**
      * 最期に閲覧したタブインデックスを更新

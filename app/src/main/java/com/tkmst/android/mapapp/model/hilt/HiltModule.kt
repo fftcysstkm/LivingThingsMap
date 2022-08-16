@@ -9,6 +9,8 @@ import com.tkmst.android.mapapp.model.user.UserPreferencesDao
 import com.tkmst.android.mapapp.model.user.UserPreferencesRoomDatabase
 import com.tkmst.android.mapapp.repository.creature.CreatureRepository
 import com.tkmst.android.mapapp.repository.creature.CreatureRepositoryImpl
+import com.tkmst.android.mapapp.repository.user.UserPreferencesRepository
+import com.tkmst.android.mapapp.repository.user.UserPreferencesRepositoryImpl
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -64,9 +66,9 @@ object HiltModule {
         return Room.databaseBuilder(
             context,
             UserPreferencesRoomDatabase::class.java,
-            "creatures"
+            "userpreferences"
         )
-            .createFromAsset("database/creatures.db")
+            .createFromAsset("database/userpreferences.db")
             .build()
     }
 
@@ -90,7 +92,7 @@ object HiltModule {
 }
 
 /**
- * Repositoryインスタンスの作り方をHiltに伝達
+ * CreatureRepositoryインスタンスの作り方をHiltに伝達
  */
 @Module
 @InstallIn(SingletonComponent::class)
@@ -100,4 +102,16 @@ abstract class CreatureRepositoryModule {
     abstract fun bindCreatureRepository(
         repositoryImpl: CreatureRepositoryImpl
     ): CreatureRepository
+}
+/**
+ * CreatureRepositoryインスタンスの作り方をHiltに伝達
+ */
+@Module
+@InstallIn(SingletonComponent::class)
+abstract class UserPreferencesRepositoryModule {
+    @Singleton
+    @Binds
+    abstract fun bindUserPreferencesRepository(
+        repositoryImpl: UserPreferencesRepositoryImpl
+    ): UserPreferencesRepository
 }

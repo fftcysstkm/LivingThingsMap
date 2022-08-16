@@ -1,6 +1,5 @@
 package com.tkmst.android.mapapp.repository.user
 
-import com.tkmst.android.mapapp.model.creature.CreatureDetail
 import com.tkmst.android.mapapp.model.user.UserPreferences
 
 /**
@@ -12,7 +11,7 @@ interface UserPreferencesRepository {
      * ユーザ情報を取得（レコードは1件のみ存在）
      * @return UserPreferences ユーザ設定情報クラス
      */
-    fun getUserPreferences(): UserPreferences
+    suspend fun getUserPreferences(): UserPreferences
 
     /**
      * 最期に閲覧したタブインデックスを更新

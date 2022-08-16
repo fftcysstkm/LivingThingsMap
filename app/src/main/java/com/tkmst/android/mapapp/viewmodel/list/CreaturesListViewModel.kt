@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.tkmst.android.mapapp.R
 import com.tkmst.android.mapapp.model.creature.Creature
 import com.tkmst.android.mapapp.repository.creature.CreatureRepository
+import com.tkmst.android.mapapp.repository.user.UserPreferencesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.*
@@ -27,7 +28,8 @@ data class CreatureListState(
  */
 @HiltViewModel
 class CreaturesListViewModel @Inject constructor(
-    private val repository: CreatureRepository,
+    private val creatureRepository: CreatureRepository,
+    private val userPreferencesRepository: UserPreferencesRepository,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -38,17 +40,26 @@ class CreaturesListViewModel @Inject constructor(
     private fun updateState(newState: () -> CreatureListState) {
         _state.value = newState()
     }
+
     private val _creatures = MutableStateFlow<List<Creature>>(emptyList())
     val creatures = _creatures.asStateFlow()
 
     // 初期設定
     init {
         // 生き物カテゴリをリソースから取得して設定
-        updateState { currentState().copy(categories =
-            listOf(*context.resources.getStringArray(R.array.category_list)))}
+        updateState {
+            currentState().copy(
+                categories =
+                listOf(*context.resources.getStringArray(R.array.category_list))
+            )
+        }
         // 生き物リストを内部DBから取得して設定
         viewModelScope.launch {
-            repository.getCreaturesByCatId(0).collect() {
+            // 最期に選択したタブインデックスを取得
+            val tabIndex = userPreferencesRepository.getUserPreferences().lastSelectedTabIndex
+            updateState { currentState().copy(currentIndex = tabIndex) }
+            // 取得したインデックスの生き物リストを取得
+            creatureRepository.getCreaturesByCatId(tabIndex.toLong()).collect() {
                 _creatures.value = it
             }
         }
@@ -60,7 +71,10 @@ class CreaturesListViewModel @Inject constructor(
     fun updateCreatureList(index: Int) {
         updateState { currentState().copy(currentIndex = index) }
         viewModelScope.launch {
-            repository.getCreaturesByCatId(index.toLong()).collect(){
+            // 設定情報に最期に選択したタブインデックスを設定
+            userPreferencesRepository.updateLastSelectedTabIndex(index.toLong())
+            // タブインデックスで生き物リスト再取得
+            creatureRepository.getCreaturesByCatId(index.toLong()).collect() {
                 _creatures.value = it
             }
         }

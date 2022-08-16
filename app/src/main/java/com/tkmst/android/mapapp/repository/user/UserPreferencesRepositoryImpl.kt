@@ -14,7 +14,7 @@ class UserPreferencesRepositoryImpl @Inject constructor(private val dao: UserPre
      * ユーザ情報を取得（レコードは1件のみ存在）
      * @return UserPreferences ユーザ設定情報クラス
      */
-    override fun getUserPreferences(): UserPreferences {
+    override suspend fun getUserPreferences(): UserPreferences {
         return dao.getUserPreferences()
     }
 
