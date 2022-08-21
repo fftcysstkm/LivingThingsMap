@@ -68,6 +68,7 @@ fun CreatureListScreen(
             Column(modifier = modifier.padding(padding)) {
                 // 生き物カテゴリーのタブ
                 Tabs(
+                    currentTabIndex = uiState.value.currentIndex,
                     viewModel = viewModel,
                     categories = uiState.value.categories,
                     coroutineScope = coroutineScope,
@@ -135,6 +136,7 @@ fun CreatureListScreen(
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun Tabs(
+    currentTabIndex: Int,
     viewModel: CreaturesListViewModel,
     categories: List<String>,
     coroutineScope: CoroutineScope,
@@ -142,21 +144,21 @@ fun Tabs(
     modifier: Modifier = Modifier
 ) {
     ScrollableTabRow(
-        selectedTabIndex = pagerState.currentPage,
 
-        // 現在いるタブを示す装飾
-        indicator = { tabPositions ->
-            TabRowDefaults.Indicator(
-                Modifier.pagerTabIndicatorOffset(pagerState, tabPositions),
-                height = 2.dp,
-                color = Color.White
-            )
-        }
+        selectedTabIndex = currentTabIndex,
+        // 現在いるタブを示す装飾 なぜか公式のこれがあると現在位置の装飾がおかしくなるのでコメントアウトしておく
+//        indicator = { tabPositions ->
+//            TabRowDefaults.Indicator(
+//                Modifier.pagerTabIndicatorOffset(pagerState, tabPositions),
+//                height = 2.dp,
+//                color = Color.White
+//            )
+//        }
     ) {
         categories.forEachIndexed { index, _ ->
             Tab(
                 text = { Text(categories[index]) },
-                selected = pagerState.currentPage == index,
+                selected = currentTabIndex == index,// pagerState.currentPage == index
                 onClick = {
                     viewModel.updateCreatureList(index)
                     coroutineScope.launch {

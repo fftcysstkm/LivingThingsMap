@@ -263,15 +263,7 @@ fun MapView(
 ) {
     // 現在地ボタン有効化
     val uiSettings by remember { mutableStateOf(MapUiSettings(myLocationButtonEnabled = true)) }
-    // 現在地情報表示有効化、衛星写真に設定
-    var mapProperties by remember {
-        mutableStateOf(
-            MapProperties(
-                isMyLocationEnabled = true,
-                mapType = MapType.SATELLITE
-            )
-        )
-    }
+
     val offSetY =
         ceil(LocalConfiguration.current.screenHeightDp * RATIO_BOTTOM_SHEET_HEIGHT).toInt()
 
@@ -319,7 +311,7 @@ fun MapView(
             GoogleMap(
                 modifier = modifier.fillMaxSize(),
                 cameraPositionState = cameraPositionState,
-                properties = mapProperties,
+                properties = state.mapProperties,
                 uiSettings = uiSettings,
                 onMapLoaded = onMapLoaded,
                 onMapLongClick = {
@@ -374,12 +366,10 @@ fun MapView(
                 horizontalArrangement = Arrangement.End
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = "Satellite")
+                    Text(text = stringResource(R.string.satellite_mode_label))
                     Switch(
-                        state.isMapTypeSatellite,
+                        state.mapProperties.mapType == MapType.SATELLITE,
                         onCheckedChange = {
-                            val mapType = if (it) MapType.SATELLITE else MapType.NORMAL
-                            mapProperties = mapProperties.copy(mapType = mapType)
                             viewModel.changeMapType()
                         },
                         colors = SwitchDefaults.colors(uncheckedTrackColor = Color.DarkGray)

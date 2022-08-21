@@ -12,6 +12,9 @@ import com.tkmst.android.mapapp.model.date.RecordDateTime
 import com.tkmst.android.mapapp.model.location.LocationLiveData
 import com.tkmst.android.mapapp.repository.creature.CreatureRepository
 import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.MapProperties
+import com.google.maps.android.compose.MapType
+import com.tkmst.android.mapapp.repository.user.UserPreferencesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -32,7 +35,10 @@ data class DetailRecordState @RequiresApi(Build.VERSION_CODES.O) constructor(
     val recordedAt: RecordDateTime = RecordDateTime(LocalDateTime.now()),
     val location: LatLng = LatLng(0.0, 0.0),
     val done: Boolean = false,
-    val isMapTypeSatellite: Boolean = true,
+    val mapProperties: MapProperties = MapProperties(
+        isMyLocationEnabled = true,
+        mapType = MapType.SATELLITE
+    ),
     val isUpdateMode: Boolean = false,
     val errorMessage: String = ""
 )
@@ -46,7 +52,8 @@ data class DetailRecordState @RequiresApi(Build.VERSION_CODES.O) constructor(
 @HiltViewModel
 @RequiresApi(Build.VERSION_CODES.O)
 class MapViewModel @Inject constructor(
-    private val repository: CreatureRepository,
+    private val creatureRepository: CreatureRepository,
+    private val userPreferencesRepository: UserPreferencesRepository,
     application: Application,
     savedStateHandle: SavedStateHandle
 ) : AndroidViewModel(application) {
@@ -59,7 +66,7 @@ class MapViewModel @Inject constructor(
     private val locationLiveData = LocationLiveData(application)
 
     val creatureList = flow {
-        val list = repository.getCreatureDetails(creatureId)
+        val list = creatureRepository.getCreatureDetails(creatureId)
         emitAll(list)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
@@ -71,6 +78,24 @@ class MapViewModel @Inject constructor(
         )
     )
     val state = _state.asStateFlow()
+
+    // 初期設定（地図表示モード）
+    init {
+        viewModelScope.launch {
+            try {
+                // 最期に設定した地図表示モードを内部DBから取得し、state更新
+                // 1:衛星写真モード、0:絵モード
+                val isMapTypeSatellite =
+                    userPreferencesRepository.getUserPreferences().isModeSatellite == 1
+                val lastMapType = if (isMapTypeSatellite) MapType.SATELLITE else MapType.NORMAL
+                val lastMapProperties =
+                    MapProperties(isMyLocationEnabled = true, mapType = lastMapType)
+                updateState { currentState().copy(mapProperties = lastMapProperties) }
+            } catch (e: Exception) {
+                updateState { currentState().copy(errorMessage = e.message ?: "") }
+            }
+        }
+    }
 
     private fun currentState() = _state.value
     private fun updateState(newState: () -> DetailRecordState) {
@@ -95,7 +120,33 @@ class MapViewModel @Inject constructor(
      * デフォルトは衛星写真
      */
     fun changeMapType() {
-        updateState { currentState().copy(isMapTypeSatellite = !_state.value.isMapTypeSatellite) }
+        // タップした位置情報を設定情報として保存し、stateを更新
+        // 次開いたときはこの設定情報が初期値になる
+        try {
+            viewModelScope.launch {
+                // 現在のマップモードを反転する
+                val isMapTypeSatellite = !(_state.value.mapProperties.mapType == MapType.SATELLITE)
+                userPreferencesRepository.updateIsModeSatellite(isMapTypeSatellite)
+                updateState {
+                    currentState().copy(
+                        mapProperties = MapProperties(
+                            isMyLocationEnabled = true,
+                            mapType = getReversedMapType()
+                        )
+                    )
+                }
+            }
+        } catch (e: Exception) {
+            updateState { currentState().copy(errorMessage = e.message ?: "") }
+        }
+    }
+
+    /**
+     * 現在の設定と逆のMapTypeを取得する
+     * @return MapType（衛星orノーマル）
+     */
+    private fun getReversedMapType(): MapType {
+        return if (state.value.mapProperties.mapType == MapType.SATELLITE) MapType.NORMAL else MapType.SATELLITE
     }
 
     /**
@@ -116,7 +167,7 @@ class MapViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 // 保存完了後、マーカーが残るので詳細情報を初期化する
-                repository.addCreatureDetail(creatureDetail)
+                creatureRepository.addCreatureDetail(creatureDetail)
                 refreshState()
             } catch (e: Exception) {
                 updateState { currentState().copy(errorMessage = e.message ?: "") }
@@ -140,7 +191,7 @@ class MapViewModel @Inject constructor(
         // 生き物詳細情報更新処理
         viewModelScope.launch {
             try {
-                repository.updateCreatureDetail(creatureDetail)
+                creatureRepository.updateCreatureDetail(creatureDetail)
                 // 更新完了後、マーカーが残るので詳細情報を初期化する
                 refreshState()
             } catch (e: Exception) {
@@ -149,6 +200,9 @@ class MapViewModel @Inject constructor(
         }
     }
 
+    /**
+     * マーカーを更新する
+     */
     fun deleteCreatureDetail() {
         val creatureDetail = CreatureDetail(
             creatureDetailId = _state.value.creatureDetailId,
@@ -163,7 +217,7 @@ class MapViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 // 削除完了後、マーカーが残るので詳細情報を初期化する
-                repository.deleteCreatureDetail(creatureDetail)
+                creatureRepository.deleteCreatureDetail(creatureDetail)
                 refreshState()
             } catch (e: Exception) {
                 updateState { currentState().copy(errorMessage = e.message ?: "") }

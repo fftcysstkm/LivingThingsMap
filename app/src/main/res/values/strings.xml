@@ -17,10 +17,11 @@
         <item>魚</item>
         <item>爬虫類</item>
         <item>両生類</item>
+        <item>哺乳類</item>
         <item>植物</item>
         <item>菌類</item>
         <item>軟体動物</item>
-        <item>哺乳類</item>
+        <item>甲殻類</item>
         <item>その他</item>
     </string-array>
 
@@ -38,4 +39,5 @@
     <string name="confirm_delete">この生き物を削除しますか？位置情報も削除されます。</string>
 
     <string name="error_empty_input">生き物タイプと生き物の名前を入力してください。</string>
+    <string name="satellite_mode_label">衛星写真</string>
 </resources>
