@@ -39,4 +39,5 @@
     <string name="confirm_delete">この生き物を削除しますか？位置情報も削除されます。</string>
 
     <string name="error_empty_input">生き物タイプと生き物の名前を入力してください。</string>
+    <string name="satellite_mode_label">衛星写真</string>
 </resources>
