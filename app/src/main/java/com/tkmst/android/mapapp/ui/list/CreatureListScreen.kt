@@ -193,7 +193,7 @@ fun TabContent(
     modifier: Modifier = Modifier
 ) {
 
-    HorizontalPager(count = categories.size, state = pagerState) {
+    HorizontalPager(count = categories.size, state = pagerState, userScrollEnabled = false) {
         // 生きものリスト
         LazyColumn(modifier.padding(8.dp)) {
             items(creatures.value) { creature ->
@@ -257,22 +257,22 @@ fun TopBarForCreatureListScreen(
     TopAppBar(title = { Text(text = stringResource(id = R.string.app_name)) },
         actions = {
 
-//            Box {
-                // 編集アイコン
-                IconButton(onClick = onClickEditIcon) {
-                    Icon(Icons.Default.Edit, "")
+            // 編集アイコン
+            IconButton(onClick = onClickEditIcon) {
+                Icon(Icons.Default.Edit, "")
+            }
+            // ドロップダウンメニュー（プライバシーポリシーのリンク）
+            IconButton(onClick = onClickOptionIcon) {
+                Icon(Icons.Default.MoreVert, "")
+            }
+            DropdownMenu(expanded = showMenu, onDismissRequest = onClickOptionIcon) {
+                DropdownMenuItem(onClick = {
+                    // ブラウザ立ち上げ、ドロップダウンメニューは閉じる
+                    uriHandler.openUri(uriPrivacyPolicy)
+                    onClickOptionIcon()
+                }) {
+                    Text(stringResource(id = R.string.dropdown_menu_privacy_policy))
                 }
-                // ドロップダウンメニュー（プライバシーポリシーのリンク）
-                IconButton(onClick = onClickOptionIcon) {
-                    Icon(Icons.Default.MoreVert, "")
-                }
-                DropdownMenu(expanded = showMenu, onDismissRequest = onClickOptionIcon) {
-                    DropdownMenuItem(onClick = {
-                        uriHandler.openUri(uriPrivacyPolicy)
-                    }) {
-                        Text(stringResource(id = R.string.dropdown_menu_privacy_policy))
-                    }
-                }
-//            }
+            }
         })
 }
