@@ -20,7 +20,8 @@ import javax.inject.Inject
 data class CreatureListState(
     val categories: List<String> = listOf(),
     val currentIndex: Int = 0,
-    val isEditMode: Boolean = false
+    val isEditMode: Boolean = false,
+    val showMenu: Boolean = false
 )
 
 /**
@@ -85,6 +86,12 @@ class CreaturesListViewModel @Inject constructor(
      */
     fun changeEditMode() {
         updateState { currentState().copy(isEditMode = !_state.value.isEditMode) }
+    }
+    /**
+     * メニューバーのドロップダウンメニュー開閉切り替え
+     */
+    fun changeShowMenu(){
+        updateState { currentState().copy(showMenu = !_state.value.showMenu) }
     }
 
 }

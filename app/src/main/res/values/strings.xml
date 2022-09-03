@@ -10,6 +10,11 @@
     <string name="permission_button_text_first_use">権限を要求</string>
     <string name="note_text_first_use">初回使用時は地図が開けないことがあります。その場合は、前の画面に一度戻って再度地図を開いてください。</string>
 
+    <!--  プライバシーポリシーのURL -->
+    <string name="privacy_policy_url">https://sites.google.com/view/tkmst-app-info/home/living-things-map</string>
+    <!-- ドロップダウンメニューのプライバシーポリシーのラベル -->
+    <string name="dropdown_menu_privacy_policy">プライバシーポリシー</string>
+
     <!-- 生き物登録画面のラジオボタンの選択肢 -->
     <string-array name="category_list">
         <item>鳥</item>
