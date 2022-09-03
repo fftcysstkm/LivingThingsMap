@@ -9,10 +9,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -61,7 +64,13 @@ fun CreatureListScreen(
     // 通常モードでリストタップで地図記録画面に遷移
     Scaffold(
         scaffoldState = scaffoldState,
-        topBar = { TopBarForCreatureListScreen { viewModel.changeEditMode() } },
+        topBar = {
+            TopBarForCreatureListScreen(
+                onClickEditIcon = { viewModel.changeEditMode() },
+                onClickOptionIcon = { viewModel.changeShowMenu() },
+                showMenu = uiState.value.showMenu
+            )
+        },
         floatingActionButton = { AddFab(onClickFab = { onClickFab(uiState.value.currentIndex.toLong()) }) },
         content = { padding ->
 
@@ -235,16 +244,35 @@ fun CreatureCard(
  * 生きものリスト画面用トップバー
  */
 @Composable
-fun TopBarForCreatureListScreen(onClickEditIcon: () -> Unit) {
+fun TopBarForCreatureListScreen(
+    onClickEditIcon: () -> Unit,
+    onClickOptionIcon: () -> Unit,
+    showMenu: Boolean
+) {
+
+    // ブラウザ立ち上げてプライバシーポリシーを開く
+    val uriHandler = LocalUriHandler.current
+    val uriPrivacyPolicy = stringResource(id = R.string.privacy_policy_url)
 
     TopAppBar(title = { Text(text = stringResource(id = R.string.app_name)) },
         actions = {
 
-            Box {
-                // オプションメニュー（編集アイコン）
+//            Box {
+                // 編集アイコン
                 IconButton(onClick = onClickEditIcon) {
                     Icon(Icons.Default.Edit, "")
                 }
-            }
+                // ドロップダウンメニュー（プライバシーポリシーのリンク）
+                IconButton(onClick = onClickOptionIcon) {
+                    Icon(Icons.Default.MoreVert, "")
+                }
+                DropdownMenu(expanded = showMenu, onDismissRequest = onClickOptionIcon) {
+                    DropdownMenuItem(onClick = {
+                        uriHandler.openUri(uriPrivacyPolicy)
+                    }) {
+                        Text(stringResource(id = R.string.dropdown_menu_privacy_policy))
+                    }
+                }
+//            }
         })
 }
